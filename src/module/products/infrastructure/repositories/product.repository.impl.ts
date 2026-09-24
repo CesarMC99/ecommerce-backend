@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { QueryFilter, Model, SortOrder } from 'mongoose';
+import { isValidObjectId, QueryFilter, Model, SortOrder } from 'mongoose';
 import { Product, ProductStatus } from '../../domain/entities/product.entity';
 import {
   ProductFacets,
@@ -82,6 +82,20 @@ export class ProductRepositoryImpl implements ProductRepository {
   async findBySlug(slug: string): Promise<Product | null> {
     const doc = await this.productModel.findOne({ slug }).exec();
     return doc ? ProductMapper.toDomain(doc) : null;
+  }
+
+  async findByIds(ids: string[]): Promise<Product[]> {
+    // Un id con formato inválido haría fallar TODA la consulta de Mongo
+    // (CastError). Se descartan antes: para el carrito, un id inválido es
+    // simplemente "un producto que no existe"
+    const validIds = ids.filter((id) => isValidObjectId(id));
+    if (validIds.length === 0) return [];
+
+    // $in: todos los productos en UNA consulta, no una por línea del carrito
+    const docs = await this.productModel
+      .find({ _id: { $in: validIds } })
+      .exec();
+    return docs.map((doc) => ProductMapper.toDomain(doc));
   }
 
   async findFacets(status: ProductStatus): Promise<ProductFacets> {

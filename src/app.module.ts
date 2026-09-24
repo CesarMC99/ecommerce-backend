@@ -16,6 +16,7 @@ import {
   jwtConfig,
 } from './config';
 import { AuthModule } from './module/auth/auth.module';
+import { CartModule } from './module/cart/cart.module';
 import { ProductsModule } from './module/products/products.module';
 import { UsersModule } from './module/users/users.module';
 
@@ -52,6 +53,7 @@ import { UsersModule } from './module/users/users.module';
     UsersModule,
     AuthModule,
     ProductsModule,
+    CartModule,
   ],
   controllers: [AppController],
 

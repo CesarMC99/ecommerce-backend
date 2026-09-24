@@ -3,7 +3,7 @@ import { GetProductBySlugUseCase } from '../../application/use-cases/get-product
 import { GetProductFacetsUseCase } from '../../application/use-cases/get-product-facets.use-case';
 import { GetRelatedProductsUseCase } from '../../application/use-cases/get-related-products.use-case';
 import { ListProductsUseCase } from '../../application/use-cases/list-products.use-case';
-import type { Product } from '../../domain/entities/product.entity';
+import { toProductType } from '../product.presenter';
 import { ProductsArgs, RelatedProductsArgs } from '../inputs/products.args';
 import {
   ProductFacetsType,
@@ -39,7 +39,7 @@ export class ProductsResolver {
     });
     return {
       ...result,
-      items: result.items.map((product) => this.toProductType(product)),
+      items: result.items.map((product) => toProductType(product)),
     };
   }
 
@@ -50,7 +50,7 @@ export class ProductsResolver {
   })
   async product(@Args('slug') slug: string): Promise<ProductType | null> {
     const product = await this.getProductBySlugUseCase.execute(slug);
-    return product ? this.toProductType(product) : null;
+    return product ? toProductType(product) : null;
   }
 
   @Query(() => ProductFacetsType, {
@@ -73,38 +73,6 @@ export class ProductsResolver {
       args.slug,
       args.limit,
     );
-    return products.map((product) => this.toProductType(product));
-  }
-
-  /**
-   * Entidad de dominio → tipo GraphQL. Punto único de traducción (DRY):
-   * aquí se "materializan" las reglas de la entidad en campos de la API.
-   */
-  private toProductType(product: Product): ProductType {
-    return {
-      id: product.id,
-      slug: product.slug,
-      name: product.name,
-      description: product.description,
-      details: product.details,
-      price: product.price,
-      compareAtPrice: product.compareAtPrice,
-      discountPercentage: product.discountPercentage(),
-      isNew: product.isNew(),
-      category: product.category,
-      type: product.type,
-      color: product.color,
-      sizes: product.sizes.map((size) => ({
-        size: size.size,
-        inStock: size.stock > 0,
-      })),
-      inStock: product.isInStock(),
-      images: product.images,
-      mainImage: product.mainImage(),
-      rating: product.rating,
-      reviewsCount: product.reviewsCount,
-      isFeatured: product.isFeatured,
-      publishedAt: product.publishedAt,
-    };
+    return products.map((product) => toProductType(product));
   }
 }

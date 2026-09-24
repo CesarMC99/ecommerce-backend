@@ -45,6 +45,12 @@ Typed config in `src/config/` via `registerAs` namespaces (`app`, `database`, `j
 - Derived fields are computed by the `Product` entity, never stored: `discountPercentage`, `isNew` (published ≤ `NEW_PRODUCT_DAYS`), `inStock`. Stock is **per size** (`sizes: [{ size, stock }]`); the API only exposes `inStock` per size, not quantities.
 - Every sort ends in `_id` so pagination is deterministic. Images store Cloudinary `publicId` (+ alt/width/height), never full URLs; uploads (phase 2) will use backend-signed direct uploads.
 
+## Cart
+
+- Guests keep their cart in the browser (frontend Zustand + localStorage) and price it with the **public** `cartQuote(items)`; signed-in users use `myCart`, `addToCart`, `updateCartItem` (quantity 0 removes), `mergeCart(items)` (called on login) and `clearCart` — all behind `JwtAuthGuard`, always scoped to the token's user (no `userId` argument exists).
+- The cart stores only `{ productId, size, quantity }`, never prices. Every read goes through `CartPricer` → `priceCart()` (pure, `domain/services/cart-pricing.ts`): prices come from the current product, quantities are capped to stock and `MAX_QUANTITY_PER_LINE` (10), unavailable lines are returned with `unavailableReason` but excluded from totals. Shipping 4.95 € unless subtotal ≥ 50 € (`FREE_SHIPPING_THRESHOLD`).
+- `Cart` entity is immutable (every operation returns a new Cart); `merge()` sums repeated lines. `toProductType()` lives in `products/presentation/product.presenter.ts` so cart lines reuse it.
+
 ## Conventions / gotchas
 
 - `isolatedModules` + `emitDecoratorMetadata`: pure types used in decorated signatures (constructor params, resolver args) **must** use `import type` or the build fails (TS1272).
