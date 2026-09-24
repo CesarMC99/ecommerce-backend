@@ -40,4 +40,7 @@ export const buildProduct = (overrides: Partial<Product> = {}): Product =>
 export const buildProductRepositoryMock = () => ({
   findMany: jest.fn().mockResolvedValue({ items: [], totalCount: 0 }),
   findBySlug: jest.fn().mockResolvedValue(null),
+  findFacets: jest
+    .fn()
+    .mockResolvedValue({ colors: [], sizes: [], minPrice: 0, maxPrice: 0 }),
 });

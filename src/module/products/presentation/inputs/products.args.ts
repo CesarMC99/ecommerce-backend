@@ -1,9 +1,10 @@
-import { ArgsType, Field, InputType, Int } from '@nestjs/graphql';
+import { ArgsType, Field, Float, InputType, Int } from '@nestjs/graphql';
 import { Type } from 'class-transformer';
 import {
   IsBoolean,
   IsEnum,
   IsInt,
+  IsNumber,
   IsOptional,
   IsString,
   Max,
@@ -37,6 +38,25 @@ export class ProductFilterInput {
   @IsString()
   @MaxLength(50, { message: 'El color no puede superar 50 caracteres' })
   color?: string;
+
+  @Field({
+    nullable: true,
+    description: 'Talla, p. ej. M: solo productos con stock en esa talla',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(10, { message: 'La talla no puede superar 10 caracteres' })
+  size?: string;
+
+  @Field(() => Float, {
+    nullable: true,
+    description: 'Valoración mínima (incluida), de 0 a 5',
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0, { message: 'La valoración mínima no puede ser negativa' })
+  @Max(5, { message: 'La valoración mínima no puede superar 5' })
+  minRating?: number;
 
   @Field(() => Int, {
     nullable: true,

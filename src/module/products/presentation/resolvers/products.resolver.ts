@@ -1,9 +1,14 @@
 import { Args, Query, Resolver } from '@nestjs/graphql';
 import { GetProductBySlugUseCase } from '../../application/use-cases/get-product-by-slug.use-case';
+import { GetProductFacetsUseCase } from '../../application/use-cases/get-product-facets.use-case';
 import { ListProductsUseCase } from '../../application/use-cases/list-products.use-case';
 import type { Product } from '../../domain/entities/product.entity';
 import { ProductsArgs } from '../inputs/products.args';
-import { ProductPageType, ProductType } from '../types/product.type';
+import {
+  ProductFacetsType,
+  ProductPageType,
+  ProductType,
+} from '../types/product.type';
 
 /**
  * Resolver del catálogo (capa de presentación).
@@ -17,6 +22,7 @@ export class ProductsResolver {
   constructor(
     private readonly listProductsUseCase: ListProductsUseCase,
     private readonly getProductBySlugUseCase: GetProductBySlugUseCase,
+    private readonly getProductFacetsUseCase: GetProductFacetsUseCase,
   ) {}
 
   @Query(() => ProductPageType, {
@@ -43,6 +49,15 @@ export class ProductsResolver {
   async product(@Args('slug') slug: string): Promise<ProductType | null> {
     const product = await this.getProductBySlugUseCase.execute(slug);
     return product ? this.toProductType(product) : null;
+  }
+
+  @Query(() => ProductFacetsType, {
+    description:
+      'Colores, tallas y rango de precios disponibles para los filtros',
+  })
+  productFacets(): Promise<ProductFacetsType> {
+    // Las facetas ya tienen la forma del tipo GraphQL: no hace falta mapear
+    return this.getProductFacetsUseCase.execute();
   }
 
   /**
