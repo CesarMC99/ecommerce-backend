@@ -1,0 +1,63 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type AuthPayload {
+  accessToken: String!
+  user: User!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+input LoginWithGoogleInput {
+  code: String!
+}
+
+type Mutation {
+  """Inicia sesión con email y contraseña"""
+  login(input: LoginInput!): AuthPayload!
+
+  """
+  Recibe el authorization code de Google, lo canjea y verifica en el backend
+  """
+  loginWithGoogle(input: LoginWithGoogleInput!): AuthPayload!
+
+  """Cierra la sesión actual: revoca el refresh token y limpia la cookie"""
+  logout: Boolean!
+
+  """
+  Renueva la sesión usando la cookie httpOnly del refresh token (con rotación)
+  """
+  refreshTokens: AuthPayload!
+
+  """Registra un usuario con email y contraseña"""
+  register(input: RegisterInput!): AuthPayload!
+}
+
+type Query {
+  """Devuelve el usuario autenticado (requiere Bearer token)"""
+  me: User!
+}
+
+input RegisterInput {
+  email: String!
+  name: String!
+  password: String!
+}
+
+type User {
+  avatarUrl: String
+  createdAt: DateTime!
+  email: String!
+  id: ID!
+  name: String!
+  roles: [String!]!
+}
