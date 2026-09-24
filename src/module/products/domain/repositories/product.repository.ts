@@ -36,6 +36,8 @@ export interface ProductSearchCriteria {
   onSale?: boolean;
   /** true → solo destacados (la sección "Destacados" de la home) */
   featured?: boolean;
+  /** Slug a excluir (p. ej. el producto que ya se está viendo) */
+  excludeSlug?: string;
   sort: ProductSort;
   /** Página empezando en 1 */
   page: number;

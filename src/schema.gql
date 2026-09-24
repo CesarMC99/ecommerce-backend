@@ -50,6 +50,9 @@ type Product {
   compareAtPrice: Int
   description: String!
 
+  """Datos de la ficha: composición, cuidados, origen..."""
+  details: [String!]!
+
   """Porcentaje de descuento redondeado (21 = -21%)"""
   discountPercentage: Int
   id: ID!
@@ -171,6 +174,14 @@ type Query {
 
   """Catálogo público con filtros, orden y paginación"""
   products(filter: ProductFilterInput, page: Int! = 1, pageSize: Int! = 12, sort: ProductSort! = FEATURED): ProductPage!
+
+  """"También te puede gustar": misma categoría, sin el producto actual"""
+  relatedProducts(
+    limit: Int! = 4
+
+    """Slug del producto que se está viendo"""
+    slug: String!
+  ): [Product!]!
 }
 
 input RegisterInput {

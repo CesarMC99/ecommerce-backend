@@ -12,6 +12,9 @@ export class ProductMapper {
       doc.slug,
       doc.name,
       doc.description,
+      // `?? []`: los productos guardados ANTES de existir este campo no lo
+      // tienen en la base de datos; así no rompen al leerlos
+      [...(doc.details ?? [])],
       doc.price,
       doc.compareAtPrice,
       doc.category,

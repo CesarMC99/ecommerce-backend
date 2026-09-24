@@ -16,6 +16,7 @@ export const buildProduct = (overrides: Partial<Product> = {}): Product =>
     overrides.slug ?? 'abrigo-de-lana',
     overrides.name ?? 'Abrigo de lana',
     overrides.description ?? 'Abrigo de lana virgen',
+    overrides.details ?? ['80% lana, 20% poliamida', 'Lavado en seco'],
     overrides.price ?? 18900,
     'compareAtPrice' in overrides
       ? (overrides.compareAtPrice as number | null)

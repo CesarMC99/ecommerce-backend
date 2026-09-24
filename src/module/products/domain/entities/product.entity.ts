@@ -61,6 +61,13 @@ export class Product {
     public readonly name: string,
     public readonly description: string,
     /**
+     * Datos cortos de la ficha: composición, cuidados, origen...
+     * ('80% lana', 'Lavado en seco'). Una lista y no campos fijos: cada tipo
+     * de producto tiene datos distintos (un bolso no tiene "composición de
+     * tejido" y un jersey no tiene "tipo de cierre")
+     */
+    public readonly details: string[],
+    /**
      * Precio en CÉNTIMOS y como entero (18900 = 189,00 €).
      * Con decimales, JavaScript hace cosas como 0.1 + 0.2 = 0.30000000000000004:
      * en dinero eso son céntimos que no cuadran. Con enteros, nunca pasa.
