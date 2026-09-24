@@ -89,6 +89,20 @@ type ProductColor {
   name: String!
 }
 
+type ProductFacets {
+  """Colores existentes"""
+  colors: [ProductColor!]!
+
+  """Precio más alto en céntimos"""
+  maxPrice: Int!
+
+  """Precio más bajo en céntimos"""
+  minPrice: Int!
+
+  """Tallas con stock, en orden natural (XS → XL, 37 → 41)"""
+  sizes: [String!]!
+}
+
 input ProductFilterInput {
   category: ProductCategory
 
@@ -101,8 +115,14 @@ input ProductFilterInput {
   """Precio máximo en céntimos (incluido)"""
   maxPrice: Int
 
+  """Valoración mínima (incluida), de 0 a 5"""
+  minRating: Float
+
   """Solo productos rebajados"""
   onSale: Boolean
+
+  """Talla, p. ej. M: solo productos con stock en esa talla"""
+  size: String
 }
 
 type ProductImage {
@@ -136,6 +156,7 @@ enum ProductSort {
   NEWEST
   PRICE_ASC
   PRICE_DESC
+  RATING
 }
 
 type Query {
@@ -144,6 +165,9 @@ type Query {
 
   """Un producto por su slug; null si no existe o no está publicado"""
   product(slug: String!): Product
+
+  """Colores, tallas y rango de precios disponibles para los filtros"""
+  productFacets: ProductFacets!
 
   """Catálogo público con filtros, orden y paginación"""
   products(filter: ProductFilterInput, page: Int! = 1, pageSize: Int! = 12, sort: ProductSort! = FEATURED): ProductPage!

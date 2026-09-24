@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { QueryFilter, Model, SortOrder } from 'mongoose';
-import { Product } from '../../domain/entities/product.entity';
+import { Product, ProductStatus } from '../../domain/entities/product.entity';
 import {
+  ProductFacets,
   ProductRepository,
   ProductSearchCriteria,
   ProductSearchResult,
@@ -24,7 +25,25 @@ const SORT_BY: Record<ProductSort, Record<string, SortOrder>> = {
   [ProductSort.NEWEST]: { publishedAt: -1, _id: 1 },
   [ProductSort.PRICE_ASC]: { price: 1, _id: 1 },
   [ProductSort.PRICE_DESC]: { price: -1, _id: 1 },
+  [ProductSort.RATING]: { rating: -1, reviewsCount: -1, _id: 1 },
 };
+
+/**
+ * Coincidencia EXACTA sin distinguir mayúsculas ('camel' = 'Camel').
+ * Se escapa el texto para que caracteres como "." o "*" no se interpreten
+ * como regex: un usuario podría mandar ".*" y saltarse el filtro.
+ */
+const exactInsensitive = (value: string) => ({
+  $regex: `^${value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
+  $options: 'i',
+});
+
+/** Forma del resultado de la agregación de facetas ($facet). */
+interface FacetsAggregation {
+  colors: { _id: string; hex: string }[];
+  sizes: { _id: string }[];
+  prices: { min: number; max: number }[];
+}
 
 /**
  * Implementación Mongoose del ProductRepository (adaptador).
@@ -65,6 +84,52 @@ export class ProductRepositoryImpl implements ProductRepository {
     return doc ? ProductMapper.toDomain(doc) : null;
   }
 
+  async findFacets(status: ProductStatus): Promise<ProductFacets> {
+    // $facet ejecuta VARIAS agregaciones sobre los mismos documentos en una
+    // sola ida y vuelta a la base de datos (en vez de 3 consultas)
+    const [result] = await this.productModel
+      .aggregate<FacetsAggregation>([
+        { $match: { status } },
+        {
+          $facet: {
+            // Un color por nombre (con su hex) → las bolitas de color
+            colors: [
+              { $group: { _id: '$color.name', hex: { $first: '$color.hex' } } },
+            ],
+            // $unwind "despliega" el array de tallas: un documento por talla.
+            // Solo cuentan tallas CON stock: ofrecer una talla agotada en el
+            // filtro llevaría a "sin resultados"
+            sizes: [
+              { $unwind: '$sizes' },
+              { $match: { 'sizes.stock': { $gt: 0 } } },
+              { $group: { _id: '$sizes.size' } },
+            ],
+            prices: [
+              {
+                $group: {
+                  _id: null,
+                  min: { $min: '$price' },
+                  max: { $max: '$price' },
+                },
+              },
+            ],
+          },
+        },
+      ])
+      .exec();
+
+    return {
+      colors: result.colors.map((color) => ({
+        name: color._id,
+        hex: color.hex,
+      })),
+      sizes: result.sizes.map((size) => size._id),
+      // Catálogo vacío → no hay grupo de precios: se devuelve 0
+      minPrice: result.prices[0]?.min ?? 0,
+      maxPrice: result.prices[0]?.max ?? 0,
+    };
+  }
+
   /** Solo se añade al filtro lo que viene definido: sin filtros = todo. */
   private buildFilter(
     criteria: ProductSearchCriteria,
@@ -77,12 +142,22 @@ export class ProductRepositoryImpl implements ProductRepository {
     if (criteria.maxPrice !== undefined) {
       filter.price = { $lte: criteria.maxPrice };
     }
+    if (criteria.minRating !== undefined) {
+      filter.rating = { $gte: criteria.minRating };
+    }
     if (criteria.color) {
-      // Insensible a mayúsculas ('camel' = 'Camel'). Se escapa el texto para
-      // que caracteres como "." o "*" no se interpreten como regex (un
-      // usuario podría mandar ".*" y saltarse el filtro)
-      const escaped = criteria.color.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      filter['color.name'] = { $regex: `^${escaped}$`, $options: 'i' };
+      filter['color.name'] = exactInsensitive(criteria.color);
+    }
+    if (criteria.size) {
+      // $elemMatch: la MISMA entrada del array debe ser esa talla Y tener
+      // stock. Sin él, un producto con "M agotada" y "S con stock" pasaría
+      // el filtro de la M (una condición la cumple una talla y otra, otra)
+      filter.sizes = {
+        $elemMatch: {
+          size: exactInsensitive(criteria.size),
+          stock: { $gt: 0 },
+        },
+      };
     }
     if (criteria.onSale) {
       // Misma regla que Product.isOnSale(): hay precio anterior Y es mayor.

@@ -153,3 +153,21 @@ export class ProductPageType {
   @Field(() => Int)
   totalPages: number;
 }
+
+/** Opciones disponibles para construir los filtros del catálogo. */
+@ObjectType('ProductFacets')
+export class ProductFacetsType {
+  @Field(() => [ProductColorType], { description: 'Colores existentes' })
+  colors: ProductColorType[];
+
+  @Field(() => [String], {
+    description: 'Tallas con stock, en orden natural (XS → XL, 37 → 41)',
+  })
+  sizes: string[];
+
+  @Field(() => Int, { description: 'Precio más bajo en céntimos' })
+  minPrice: number;
+
+  @Field(() => Int, { description: 'Precio más alto en céntimos' })
+  maxPrice: number;
+}

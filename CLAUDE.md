@@ -40,7 +40,7 @@ Typed config in `src/config/` via `registerAs` namespaces (`app`, `database`, `j
 
 ## Products (catalog, read-only for now)
 
-- Public queries `products(filter, sort, page, pageSize): ProductPage` and `product(slug): Product` (null if missing or DRAFT). `ListProductsUseCase` always forces `status: ACTIVE` and clamps `pageSize` to `MAX_PAGE_SIZE` (48).
+- Public queries `products(filter, sort, page, pageSize): ProductPage`, `product(slug): Product` (null if missing or DRAFT) and `productFacets` (colors, in-stock sizes in natural order, min/max price — computed from ACTIVE products with one `$facet` aggregation). Filters: category, color, size (in stock only, `$elemMatch`), maxPrice, minRating, onSale, featured. Sorts: FEATURED, NEWEST, PRICE_ASC, PRICE_DESC, RATING. `ListProductsUseCase` always forces `status: ACTIVE` and clamps `pageSize` to `MAX_PAGE_SIZE` (48).
 - **Money is integer cents** (`price`, `compareAtPrice`); the frontend's `formatPrice` divides by 100.
 - Derived fields are computed by the `Product` entity, never stored: `discountPercentage`, `isNew` (published ≤ `NEW_PRODUCT_DAYS`), `inStock`. Stock is **per size** (`sizes: [{ size, stock }]`); the API only exposes `inStock` per size, not quantities.
 - Every sort ends in `_id` so pagination is deterministic. Images store Cloudinary `publicId` (+ alt/width/height), never full URLs; uploads (phase 2) will use backend-signed direct uploads.

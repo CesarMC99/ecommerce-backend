@@ -16,7 +16,9 @@ export const MAX_PAGE_SIZE = 48;
 export interface ListProductsCommand {
   category?: ProductCategory;
   color?: string;
+  size?: string;
   maxPrice?: number;
+  minRating?: number;
   onSale?: boolean;
   featured?: boolean;
   sort?: ProductSort;
@@ -59,7 +61,9 @@ export class ListProductsUseCase {
       status: ProductStatus.ACTIVE,
       category: command.category,
       color: command.color,
+      size: command.size,
       maxPrice: command.maxPrice,
+      minRating: command.minRating,
       onSale: command.onSale,
       featured: command.featured,
       sort: command.sort ?? ProductSort.FEATURED,
