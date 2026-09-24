@@ -14,3 +14,4 @@ export const PASSWORD_HASHER = Symbol('PASSWORD_HASHER');
 export const TOKEN_GENERATOR = Symbol('TOKEN_GENERATOR');
 // Lista de providers OAuth registrados (Google hoy; GitHub/Apple mañana)
 export const OAUTH_PROVIDERS = Symbol('OAUTH_PROVIDERS');
+export const PRODUCT_REPOSITORY = Symbol('PRODUCT_REPOSITORY');

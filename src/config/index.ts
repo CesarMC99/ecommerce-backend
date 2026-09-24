@@ -3,3 +3,4 @@ export * from './app.config';
 export * from './database.config';
 export * from './jwt.config';
 export * from './google-oauth.config';
+export * from './cloudinary.config';
