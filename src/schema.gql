@@ -42,9 +42,111 @@ type Mutation {
   register(input: RegisterInput!): AuthPayload!
 }
 
+type Product {
+  category: ProductCategory!
+  color: ProductColor!
+
+  """Precio anterior en céntimos, solo si está rebajado"""
+  compareAtPrice: Int
+  description: String!
+
+  """Porcentaje de descuento redondeado (21 = -21%)"""
+  discountPercentage: Int
+  id: ID!
+  images: [ProductImage!]!
+
+  """true si queda stock en alguna talla"""
+  inStock: Boolean!
+  isFeatured: Boolean!
+
+  """Publicado hace 30 días o menos"""
+  isNew: Boolean!
+
+  """Foto principal (la primera); null si no tiene fotos"""
+  mainImage: ProductImage
+  name: String!
+
+  """Precio en céntimos (18900 = 189,00 €)"""
+  price: Int!
+  publishedAt: DateTime!
+  rating: Float!
+  reviewsCount: Int!
+  sizes: [ProductSize!]!
+  slug: String!
+  type: String!
+}
+
+"""Categoría principal del producto"""
+enum ProductCategory {
+  ACCESSORIES
+  MEN
+  WOMEN
+}
+
+type ProductColor {
+  """Color en hexadecimal, p. ej. #c8a06a"""
+  hex: String!
+  name: String!
+}
+
+input ProductFilterInput {
+  category: ProductCategory
+
+  """Nombre del color, p. ej. Camel"""
+  color: String
+
+  """Solo productos destacados"""
+  featured: Boolean
+
+  """Precio máximo en céntimos (incluido)"""
+  maxPrice: Int
+
+  """Solo productos rebajados"""
+  onSale: Boolean
+}
+
+type ProductImage {
+  alt: String!
+  height: Int!
+
+  """Identificador de la imagen en Cloudinary"""
+  publicId: String!
+  width: Int!
+}
+
+type ProductPage {
+  items: [Product!]!
+  page: Int!
+  pageSize: Int!
+
+  """Total de productos con estos filtros"""
+  totalCount: Int!
+  totalPages: Int!
+}
+
+type ProductSize {
+  """true si queda al menos una unidad de esta talla"""
+  inStock: Boolean!
+  size: String!
+}
+
+"""Orden del catálogo"""
+enum ProductSort {
+  FEATURED
+  NEWEST
+  PRICE_ASC
+  PRICE_DESC
+}
+
 type Query {
   """Devuelve el usuario autenticado (requiere Bearer token)"""
   me: User!
+
+  """Un producto por su slug; null si no existe o no está publicado"""
+  product(slug: String!): Product
+
+  """Catálogo público con filtros, orden y paginación"""
+  products(filter: ProductFilterInput, page: Int! = 1, pageSize: Int! = 12, sort: ProductSort! = FEATURED): ProductPage!
 }
 
 input RegisterInput {

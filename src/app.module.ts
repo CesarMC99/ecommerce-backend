@@ -16,6 +16,7 @@ import {
   jwtConfig,
 } from './config';
 import { AuthModule } from './module/auth/auth.module';
+import { ProductsModule } from './module/products/products.module';
 import { UsersModule } from './module/users/users.module';
 
 @Module({
@@ -50,6 +51,7 @@ import { UsersModule } from './module/users/users.module';
 
     UsersModule,
     AuthModule,
+    ProductsModule,
   ],
   controllers: [AppController],
 

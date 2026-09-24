@@ -54,3 +54,6 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Fotos originales para `pnpm seed:images` (pesan mucho: su copia oficial vive en Cloudinary)
+/seed-images/
