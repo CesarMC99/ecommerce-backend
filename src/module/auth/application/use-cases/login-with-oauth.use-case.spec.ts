@@ -18,7 +18,7 @@ describe('LoginWithOAuthUseCase', () => {
   const setup = () => {
     const googleProvider = {
       providerName: 'google',
-      verifyIdToken: jest.fn().mockResolvedValue(profile),
+      exchangeCode: jest.fn().mockResolvedValue(profile),
     };
     const userRepository = {
       findById: jest.fn(),
@@ -45,7 +45,7 @@ describe('LoginWithOAuthUseCase', () => {
     const { useCase, userRepository, authTokenService, user } = setup();
     userRepository.findByOAuthAccount.mockResolvedValue(user);
 
-    await useCase.execute({ provider: 'google', idToken: 'id-token' });
+    await useCase.execute({ provider: 'google', code: 'auth-code' });
 
     expect(userRepository.findByOAuthAccount).toHaveBeenCalledWith(
       'google',
@@ -59,7 +59,7 @@ describe('LoginWithOAuthUseCase', () => {
   it('usuario nuevo: lo crea sin contraseña y con la cuenta OAuth vinculada', async () => {
     const { useCase, userRepository } = setup();
 
-    await useCase.execute({ provider: 'google', idToken: 'id-token' });
+    await useCase.execute({ provider: 'google', code: 'auth-code' });
 
     expect(userRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -75,7 +75,7 @@ describe('LoginWithOAuthUseCase', () => {
     userRepository.findByEmail.mockResolvedValue(user);
     userRepository.addOAuthAccount.mockResolvedValue(user);
 
-    await useCase.execute({ provider: 'google', idToken: 'id-token' });
+    await useCase.execute({ provider: 'google', code: 'auth-code' });
 
     expect(userRepository.addOAuthAccount).toHaveBeenCalledWith(user.id, {
       provider: 'google',
@@ -86,25 +86,25 @@ describe('LoginWithOAuthUseCase', () => {
 
   it('NO vincula si el email del proveedor no está verificado (anti secuestro de cuenta)', async () => {
     const { useCase, googleProvider, userRepository, user } = setup();
-    googleProvider.verifyIdToken.mockResolvedValue({
+    googleProvider.exchangeCode.mockResolvedValue({
       ...profile,
       emailVerified: false,
     });
     userRepository.findByEmail.mockResolvedValue(user);
 
     await expect(
-      useCase.execute({ provider: 'google', idToken: 'id-token' }),
+      useCase.execute({ provider: 'google', code: 'auth-code' }),
     ).rejects.toThrow(UnauthorizedException);
   });
 
   it('propaga el error si el token de Google es inválido', async () => {
     const { useCase, googleProvider, authTokenService } = setup();
-    googleProvider.verifyIdToken.mockRejectedValue(
+    googleProvider.exchangeCode.mockRejectedValue(
       new UnauthorizedException('Token de Google inválido'),
     );
 
     await expect(
-      useCase.execute({ provider: 'google', idToken: 'token-roto' }),
+      useCase.execute({ provider: 'google', code: 'code-invalido' }),
     ).rejects.toThrow(UnauthorizedException);
     expect(authTokenService.issueTokens).not.toHaveBeenCalled();
   });
@@ -113,7 +113,7 @@ describe('LoginWithOAuthUseCase', () => {
     const { useCase } = setup();
 
     await expect(
-      useCase.execute({ provider: 'facebook', idToken: 'x' }),
+      useCase.execute({ provider: 'facebook', code: 'x' }),
     ).rejects.toThrow(BadRequestException);
   });
 });
