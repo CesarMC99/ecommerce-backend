@@ -7,6 +7,58 @@ type AuthPayload {
   user: User!
 }
 
+type Cart {
+  """Lo que falta para el envío gratis, en céntimos (0 = ya lo tiene)"""
+  amountToFreeShipping: Int!
+
+  """Unidades disponibles (contador del header)"""
+  itemCount: Int!
+  lines: [CartLine!]!
+
+  """Lo que se ahorra por rebajas, en céntimos"""
+  savings: Int!
+
+  """Coste de envío en céntimos (0 = gratis)"""
+  shipping: Int!
+
+  """Suma de las líneas disponibles, en céntimos"""
+  subtotal: Int!
+
+  """Subtotal + envío, en céntimos"""
+  total: Int!
+}
+
+input CartItemInput {
+  productId: String!
+  quantity: Int!
+  size: String!
+}
+
+type CartLine {
+  """Precio × cantidad, en céntimos"""
+  lineTotal: Int!
+
+  """Máximo de unidades comprables"""
+  maxQuantity: Int!
+  product: Product
+  productId: String!
+  quantity: Int!
+  size: String!
+
+  """null si la línea se puede comprar"""
+  unavailableReason: CartLineUnavailableReason
+
+  """Precio unitario actual en céntimos"""
+  unitPrice: Int!
+}
+
+enum CartLineUnavailableReason {
+  OUT_OF_STOCK
+  PRODUCT_NOT_FOUND
+  PRODUCT_UNAVAILABLE
+  SIZE_NOT_FOUND
+}
+
 """
 A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
 """
@@ -22,6 +74,12 @@ input LoginWithGoogleInput {
 }
 
 type Mutation {
+  """Añade unidades de un producto"""
+  addToCart(input: CartItemInput!): Cart!
+
+  """Vacía el carrito"""
+  clearCart: Cart!
+
   """Inicia sesión con email y contraseña"""
   login(input: LoginInput!): AuthPayload!
 
@@ -33,6 +91,9 @@ type Mutation {
   """Cierra la sesión actual: revoca el refresh token y limpia la cookie"""
   logout: Boolean!
 
+  """Fusiona el carrito de invitado con el de la cuenta"""
+  mergeCart(items: [CartItemInput!]!): Cart!
+
   """
   Renueva la sesión usando la cookie httpOnly del refresh token (con rotación)
   """
@@ -40,6 +101,9 @@ type Mutation {
 
   """Registra un usuario con email y contraseña"""
   register(input: RegisterInput!): AuthPayload!
+
+  """Fija la cantidad de una línea (0 la elimina)"""
+  updateCartItem(input: UpdateCartItemInput!): Cart!
 }
 
 type Product {
@@ -163,8 +227,14 @@ enum ProductSort {
 }
 
 type Query {
+  """Calcula un carrito de invitado (no guarda nada)"""
+  cartQuote(items: [CartItemInput!]!): Cart!
+
   """Devuelve el usuario autenticado (requiere Bearer token)"""
   me: User!
+
+  """Carrito del usuario con sesión"""
+  myCart: Cart!
 
   """Un producto por su slug; null si no existe o no está publicado"""
   product(slug: String!): Product
@@ -188,6 +258,14 @@ input RegisterInput {
   email: String!
   name: String!
   password: String!
+}
+
+input UpdateCartItemInput {
+  productId: String!
+
+  """0 elimina la línea"""
+  quantity: Int!
+  size: String!
 }
 
 type User {

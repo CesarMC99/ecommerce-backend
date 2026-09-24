@@ -73,6 +73,12 @@ export interface ProductFacets {
 export interface ProductRepository {
   findMany(criteria: ProductSearchCriteria): Promise<ProductSearchResult>;
   findBySlug(slug: string): Promise<Product | null>;
+  /**
+   * Varios productos por id en UNA consulta (el carrito necesita los datos
+   * de todas sus líneas a la vez). Los ids inexistentes simplemente no
+   * aparecen en el resultado; el orden no está garantizado.
+   */
+  findByIds(ids: string[]): Promise<Product[]>;
   /** Facetas calculadas sobre los productos con ese estado */
   findFacets(status: ProductStatus): Promise<ProductFacets>;
 }
