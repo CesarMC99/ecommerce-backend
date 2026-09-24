@@ -30,6 +30,7 @@ export interface ProductSeed {
   slug: string;
   name: string;
   description: string;
+  details: string[];
   price: number;
   compareAtPrice: number | null;
   category: ProductCategory;
@@ -49,6 +50,12 @@ export const PRODUCTS_SEED: ProductSeed[] = [
     name: 'Abrigo de lana',
     description:
       'Abrigo largo de lana virgen con corte recto y solapa clásica. Cálido, ligero y pensado para durar muchos inviernos.',
+    details: [
+      '80% lana virgen, 20% poliamida',
+      'Forro 100% viscosa',
+      'Limpieza en seco',
+      'Fabricado en Portugal',
+    ],
     price: 18900,
     compareAtPrice: 24000,
     category: ProductCategory.WOMEN,
@@ -66,6 +73,11 @@ export const PRODUCTS_SEED: ProductSeed[] = [
     name: 'Camisa de lino',
     description:
       'Camisa de lino lavado, fresca y transpirable. Holgada, con botones de nácar.',
+    details: [
+      '100% lino lavado',
+      'Lavado a máquina 30 °C',
+      'Fabricado en Portugal',
+    ],
     price: 5900,
     compareAtPrice: null,
     category: ProductCategory.WOMEN,
@@ -83,6 +95,11 @@ export const PRODUCTS_SEED: ProductSeed[] = [
     name: 'Pantalón sastre',
     description:
       'Pantalón de pinzas en mezcla de lana. Tiro alto y pierna recta para un look atemporal.',
+    details: [
+      '70% lana, 30% poliéster',
+      'Limpieza en seco',
+      'Fabricado en Italia',
+    ],
     price: 8900,
     compareAtPrice: null,
     category: ProductCategory.MEN,
@@ -100,6 +117,11 @@ export const PRODUCTS_SEED: ProductSeed[] = [
     name: 'Jersey de punto',
     description:
       'Jersey de punto grueso en lana merino. Cuello redondo y puños acanalados.',
+    details: [
+      '100% lana merino',
+      'Lavado a mano en frío',
+      'Fabricado en Portugal',
+    ],
     price: 7500,
     compareAtPrice: null,
     category: ProductCategory.WOMEN,
@@ -117,6 +139,11 @@ export const PRODUCTS_SEED: ProductSeed[] = [
     name: 'Vestido midi',
     description:
       'Vestido midi de viscosa con caída fluida, escote en pico y cinturón a juego.',
+    details: [
+      '100% viscosa',
+      'Lavado a máquina 30 °C',
+      'Cinturón a juego incluido',
+    ],
     price: 11900,
     compareAtPrice: null,
     category: ProductCategory.WOMEN,
@@ -134,6 +161,11 @@ export const PRODUCTS_SEED: ProductSeed[] = [
     name: 'Gabardina clásica',
     description:
       'Gabardina cruzada de algodón con tratamiento repelente al agua y cinturón.',
+    details: [
+      '100% algodón con tratamiento repelente al agua',
+      'Limpieza en seco',
+      'Fabricado en Portugal',
+    ],
     price: 15900,
     compareAtPrice: 19900,
     category: ProductCategory.MEN,
@@ -151,6 +183,12 @@ export const PRODUCTS_SEED: ProductSeed[] = [
     name: 'Bolso de piel',
     description:
       'Bolso de hombro en piel curtida vegetal, con cierre magnético y bolsillo interior.',
+    details: [
+      'Piel de curtido vegetal',
+      'Forro 100% algodón',
+      'Medidas: 32 × 24 × 10 cm',
+      'Fabricado en España',
+    ],
     price: 13500,
     compareAtPrice: null,
     category: ProductCategory.ACCESSORIES,
@@ -168,6 +206,12 @@ export const PRODUCTS_SEED: ProductSeed[] = [
     name: 'Botines de cuero',
     description:
       'Botines Chelsea de cuero con elásticos laterales y suela de goma antideslizante.',
+    details: [
+      'Cuero liso',
+      'Suela de goma antideslizante',
+      'Plantilla acolchada',
+      'Fabricado en España',
+    ],
     price: 14500,
     compareAtPrice: null,
     category: ProductCategory.ACCESSORIES,
@@ -189,6 +233,11 @@ export const PRODUCTS_SEED: ProductSeed[] = [
     name: 'Camiseta esencial',
     description:
       'Camiseta de algodón orgánico de gramaje medio. El básico que combina con todo.',
+    details: [
+      '100% algodón orgánico (180 g/m²)',
+      'Lavado a máquina 30 °C',
+      'Fabricado en Portugal',
+    ],
     price: 2900,
     compareAtPrice: null,
     category: ProductCategory.MEN,
@@ -206,6 +255,11 @@ export const PRODUCTS_SEED: ProductSeed[] = [
     name: 'Falda plisada',
     description:
       'Falda midi plisada con cintura elástica. Se mueve contigo y no se arruga.',
+    details: [
+      '100% poliéster reciclado',
+      'Lavado a máquina 30 °C',
+      'No necesita plancha',
+    ],
     price: 6900,
     compareAtPrice: null,
     category: ProductCategory.WOMEN,
@@ -223,6 +277,11 @@ export const PRODUCTS_SEED: ProductSeed[] = [
     name: 'Chaqueta de ante',
     description:
       'Chaqueta de ante suave con cremallera metálica y bolsillos de parche.',
+    details: [
+      '100% piel de ante',
+      'Forro 100% viscosa',
+      'Limpieza especializada en piel',
+    ],
     price: 21500,
     compareAtPrice: 26900,
     category: ProductCategory.MEN,
@@ -240,6 +299,7 @@ export const PRODUCTS_SEED: ProductSeed[] = [
     name: 'Bufanda de lana',
     description:
       'Bufanda amplia de lana con flecos. Abriga sin pesar y se lleva de mil maneras.',
+    details: ['100% lana', 'Medidas: 200 × 70 cm', 'Lavado a mano en frío'],
     price: 4500,
     compareAtPrice: null,
     category: ProductCategory.ACCESSORIES,

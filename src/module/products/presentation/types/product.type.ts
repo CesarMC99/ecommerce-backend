@@ -78,6 +78,11 @@ export class ProductType {
   @Field()
   description: string;
 
+  @Field(() => [String], {
+    description: 'Datos de la ficha: composición, cuidados, origen...',
+  })
+  details: string[];
+
   @Field(() => Int, { description: 'Precio en céntimos (18900 = 189,00 €)' })
   price: number;
 

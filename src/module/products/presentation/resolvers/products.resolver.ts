@@ -1,9 +1,10 @@
 import { Args, Query, Resolver } from '@nestjs/graphql';
 import { GetProductBySlugUseCase } from '../../application/use-cases/get-product-by-slug.use-case';
 import { GetProductFacetsUseCase } from '../../application/use-cases/get-product-facets.use-case';
+import { GetRelatedProductsUseCase } from '../../application/use-cases/get-related-products.use-case';
 import { ListProductsUseCase } from '../../application/use-cases/list-products.use-case';
 import type { Product } from '../../domain/entities/product.entity';
-import { ProductsArgs } from '../inputs/products.args';
+import { ProductsArgs, RelatedProductsArgs } from '../inputs/products.args';
 import {
   ProductFacetsType,
   ProductPageType,
@@ -23,6 +24,7 @@ export class ProductsResolver {
     private readonly listProductsUseCase: ListProductsUseCase,
     private readonly getProductBySlugUseCase: GetProductBySlugUseCase,
     private readonly getProductFacetsUseCase: GetProductFacetsUseCase,
+    private readonly getRelatedProductsUseCase: GetRelatedProductsUseCase,
   ) {}
 
   @Query(() => ProductPageType, {
@@ -60,6 +62,20 @@ export class ProductsResolver {
     return this.getProductFacetsUseCase.execute();
   }
 
+  @Query(() => [ProductType], {
+    description:
+      '"También te puede gustar": misma categoría, sin el producto actual',
+  })
+  async relatedProducts(
+    @Args() args: RelatedProductsArgs,
+  ): Promise<ProductType[]> {
+    const products = await this.getRelatedProductsUseCase.execute(
+      args.slug,
+      args.limit,
+    );
+    return products.map((product) => this.toProductType(product));
+  }
+
   /**
    * Entidad de dominio → tipo GraphQL. Punto único de traducción (DRY):
    * aquí se "materializan" las reglas de la entidad en campos de la API.
@@ -70,6 +86,7 @@ export class ProductsResolver {
       slug: product.slug,
       name: product.name,
       description: product.description,
+      details: product.details,
       price: product.price,
       compareAtPrice: product.compareAtPrice,
       discountPercentage: product.discountPercentage(),

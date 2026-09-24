@@ -139,6 +139,7 @@ export class ProductRepositoryImpl implements ProductRepository {
     if (criteria.status) filter.status = criteria.status;
     if (criteria.category) filter.category = criteria.category;
     if (criteria.featured) filter.isFeatured = true;
+    if (criteria.excludeSlug) filter.slug = { $ne: criteria.excludeSlug };
     if (criteria.maxPrice !== undefined) {
       filter.price = { $lte: criteria.maxPrice };
     }

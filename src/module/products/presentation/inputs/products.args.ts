@@ -15,6 +15,10 @@ import {
 import { ProductCategory } from '../../domain/entities/product.entity';
 import { ProductSort } from '../../domain/repositories/product.repository';
 import {
+  DEFAULT_RELATED_LIMIT,
+  MAX_RELATED_LIMIT,
+} from '../../application/use-cases/get-related-products.use-case';
+import {
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
 } from '../../application/use-cases/list-products.use-case';
@@ -76,6 +80,23 @@ export class ProductFilterInput {
   @IsOptional()
   @IsBoolean()
   featured?: boolean;
+}
+
+/** Argumentos de la query `relatedProducts`. */
+@ArgsType()
+export class RelatedProductsArgs {
+  @Field({ description: 'Slug del producto que se está viendo' })
+  @IsString()
+  @MaxLength(120, { message: 'El slug no puede superar 120 caracteres' })
+  slug: string;
+
+  @Field(() => Int, { defaultValue: DEFAULT_RELATED_LIMIT })
+  @IsInt()
+  @Min(1, { message: 'El límite debe ser 1 o mayor' })
+  @Max(MAX_RELATED_LIMIT, {
+    message: `El límite no puede superar ${MAX_RELATED_LIMIT}`,
+  })
+  limit: number = DEFAULT_RELATED_LIMIT;
 }
 
 /**

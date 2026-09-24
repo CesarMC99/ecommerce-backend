@@ -57,6 +57,9 @@ export class ProductDocument {
   @Prop({ default: '', trim: true })
   description: string;
 
+  @Prop({ type: [String], default: [] })
+  details: string[];
+
   // Céntimos enteros. `min: 0` evita precios negativos por error
   @Prop({ required: true, min: 0 })
   price: number;

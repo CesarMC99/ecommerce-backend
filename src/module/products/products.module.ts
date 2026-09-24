@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { PRODUCT_REPOSITORY } from '../../common/constants/injection-tokens';
 import { GetProductBySlugUseCase } from './application/use-cases/get-product-by-slug.use-case';
 import { GetProductFacetsUseCase } from './application/use-cases/get-product-facets.use-case';
+import { GetRelatedProductsUseCase } from './application/use-cases/get-related-products.use-case';
 import { ListProductsUseCase } from './application/use-cases/list-products.use-case';
 import {
   ProductDocument,
@@ -28,6 +29,7 @@ import { ProductsResolver } from './presentation/resolvers/products.resolver';
     ListProductsUseCase,
     GetProductBySlugUseCase,
     GetProductFacetsUseCase,
+    GetRelatedProductsUseCase,
     ProductsResolver,
   ],
   // Se exporta el repositorio para futuros módulos (carrito, pedidos) que
