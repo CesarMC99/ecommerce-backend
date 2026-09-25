@@ -94,6 +94,9 @@ type Mutation {
   """Fusiona el carrito de invitado con el de la cuenta"""
   mergeCart(items: [CartItemInput!]!): Cart!
 
+  """Une los favoritos de invitado con los de la cuenta"""
+  mergeFavorites(productIds: [ID!]!): [ID!]!
+
   """
   Renueva la sesión usando la cookie httpOnly del refresh token (con rotación)
   """
@@ -101,6 +104,9 @@ type Mutation {
 
   """Registra un usuario con email y contraseña"""
   register(input: RegisterInput!): AuthPayload!
+
+  """Añade o quita un producto de favoritos"""
+  toggleFavorite(productId: ID!): [ID!]!
 
   """Fija la cantidad de una línea (0 la elimina)"""
   updateCartItem(input: UpdateCartItemInput!): Cart!
@@ -236,6 +242,9 @@ type Query {
   """Carrito del usuario con sesión"""
   myCart: Cart!
 
+  """Ids de mis favoritos, el más reciente primero"""
+  myFavoriteIds: [ID!]!
+
   """Un producto por su slug; null si no existe o no está publicado"""
   product(slug: String!): Product
 
@@ -244,6 +253,9 @@ type Query {
 
   """Catálogo público con filtros, orden y paginación"""
   products(filter: ProductFilterInput, page: Int! = 1, pageSize: Int! = 12, sort: ProductSort! = FEATURED): ProductPage!
+
+  """Productos publicados por id, en el orden pedido (página de favoritos)"""
+  productsByIds(ids: [ID!]!): [Product!]!
 
   """"También te puede gustar": misma categoría, sin el producto actual"""
   relatedProducts(

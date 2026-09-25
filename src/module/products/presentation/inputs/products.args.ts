@@ -1,9 +1,11 @@
-import { ArgsType, Field, Float, InputType, Int } from '@nestjs/graphql';
+import { ArgsType, Field, Float, ID, InputType, Int } from '@nestjs/graphql';
 import { Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
   IsBoolean,
   IsEnum,
   IsInt,
+  IsMongoId,
   IsNumber,
   IsOptional,
   IsString,
@@ -14,6 +16,7 @@ import {
 } from 'class-validator';
 import { ProductCategory } from '../../domain/entities/product.entity';
 import { ProductSort } from '../../domain/repositories/product.repository';
+import { MAX_PRODUCTS_BY_IDS } from '../../application/use-cases/get-products-by-ids.use-case';
 import {
   DEFAULT_RELATED_LIMIT,
   MAX_RELATED_LIMIT,
@@ -80,6 +83,18 @@ export class ProductFilterInput {
   @IsOptional()
   @IsBoolean()
   featured?: boolean;
+}
+
+/** Argumentos de la query `productsByIds` (página de favoritos). */
+@ArgsType()
+export class ProductsByIdsArgs {
+  @Field(() => [ID])
+  @ArrayMaxSize(MAX_PRODUCTS_BY_IDS, {
+    message: `No se pueden pedir más de ${MAX_PRODUCTS_BY_IDS} productos`,
+  })
+  // each: valida CADA elemento del array, no el array entero
+  @IsMongoId({ each: true, message: 'Algún producto no es válido' })
+  ids: string[];
 }
 
 /** Argumentos de la query `relatedProducts`. */

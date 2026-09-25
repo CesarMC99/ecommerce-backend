@@ -1,10 +1,15 @@
 import { Args, Query, Resolver } from '@nestjs/graphql';
 import { GetProductBySlugUseCase } from '../../application/use-cases/get-product-by-slug.use-case';
 import { GetProductFacetsUseCase } from '../../application/use-cases/get-product-facets.use-case';
+import { GetProductsByIdsUseCase } from '../../application/use-cases/get-products-by-ids.use-case';
 import { GetRelatedProductsUseCase } from '../../application/use-cases/get-related-products.use-case';
 import { ListProductsUseCase } from '../../application/use-cases/list-products.use-case';
 import { toProductType } from '../product.presenter';
-import { ProductsArgs, RelatedProductsArgs } from '../inputs/products.args';
+import {
+  ProductsArgs,
+  ProductsByIdsArgs,
+  RelatedProductsArgs,
+} from '../inputs/products.args';
 import {
   ProductFacetsType,
   ProductPageType,
@@ -25,7 +30,17 @@ export class ProductsResolver {
     private readonly getProductBySlugUseCase: GetProductBySlugUseCase,
     private readonly getProductFacetsUseCase: GetProductFacetsUseCase,
     private readonly getRelatedProductsUseCase: GetRelatedProductsUseCase,
+    private readonly getProductsByIdsUseCase: GetProductsByIdsUseCase,
   ) {}
+
+  @Query(() => [ProductType], {
+    description:
+      'Productos publicados por id, en el orden pedido (página de favoritos)',
+  })
+  async productsByIds(@Args() args: ProductsByIdsArgs): Promise<ProductType[]> {
+    const products = await this.getProductsByIdsUseCase.execute(args.ids);
+    return products.map((product) => toProductType(product));
+  }
 
   @Query(() => ProductPageType, {
     description: 'Catálogo público con filtros, orden y paginación',

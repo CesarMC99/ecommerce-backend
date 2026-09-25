@@ -51,7 +51,14 @@ Typed config in `src/config/` via `registerAs` namespaces (`app`, `database`, `j
 - The cart stores only `{ productId, size, quantity }`, never prices. Every read goes through `CartPricer` → `priceCart()` (pure, `domain/services/cart-pricing.ts`): prices come from the current product, quantities are capped to stock and `MAX_QUANTITY_PER_LINE` (10), unavailable lines are returned with `unavailableReason` but excluded from totals. Shipping 4.95 € unless subtotal ≥ 50 € (`FREE_SHIPPING_THRESHOLD`).
 - `Cart` entity is immutable (every operation returns a new Cart); `merge()` sums repeated lines. `toProductType()` lives in `products/presentation/product.presenter.ts` so cart lines reuse it.
 
+## Favorites
+
+- Favorites require a session (the frontend shows a login modal to guests). Signed-in: `myFavoriteIds`, `toggleFavorite(productId)`, `mergeFavorites(productIds)` (adds without removing; the frontend uses it to save the favorite a guest tapped before logging in) — all return the updated id list (most recent first, max 200). Adding validates the product is ACTIVE; removing never does (users must be able to clean up retired products).
+- Public `productsByIds(ids)` (products module, max 100, keeps requested order, ACTIVE only) turns ids into cards for both guests and signed-in users.
+
 ## Conventions / gotchas
+
+- **Watch mode on Windows**: `pnpm build` deletes `dist/` and can crash a running `start:dev`; rapid multi-file edits can also make Nest's watcher die (`taskkill` error). Restart `start:dev` if the API stops responding.
 
 - `isolatedModules` + `emitDecoratorMetadata`: pure types used in decorated signatures (constructor params, resolver args) **must** use `import type` or the build fails (TS1272).
 - GraphQL context is `{ req, res }` (set in `AppModule`) — needed by the refresh-cookie logic (`presentation/refresh-token-cookie.ts`) and the guards.
