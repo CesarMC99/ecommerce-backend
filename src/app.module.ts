@@ -17,6 +17,7 @@ import {
 } from './config';
 import { AuthModule } from './module/auth/auth.module';
 import { CartModule } from './module/cart/cart.module';
+import { FavoritesModule } from './module/favorites/favorites.module';
 import { ProductsModule } from './module/products/products.module';
 import { UsersModule } from './module/users/users.module';
 
@@ -54,6 +55,7 @@ import { UsersModule } from './module/users/users.module';
     AuthModule,
     ProductsModule,
     CartModule,
+    FavoritesModule,
   ],
   controllers: [AppController],
 
