@@ -38,5 +38,8 @@ import { CartResolver } from './presentation/resolvers/cart.resolver';
     ClearCartUseCase,
     CartResolver,
   ],
+  // El checkout (módulo orders) necesita leer el carrito y calcular su
+  // precio con EXACTAMENTE las mismas reglas: se exportan en vez de copiarse
+  exports: [CART_REPOSITORY, CartPricer],
 })
 export class CartModule {}

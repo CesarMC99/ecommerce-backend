@@ -11,13 +11,17 @@ import { AppService } from './app.service';
 import { GraphqlExceptionFilter } from './common/filters/graphql-exception.filter';
 import {
   appConfig,
+  cloudinaryConfig,
   databaseConfig,
+  emailConfig,
   googleOAuthConfig,
   jwtConfig,
+  stripeConfig,
 } from './config';
 import { AuthModule } from './module/auth/auth.module';
 import { CartModule } from './module/cart/cart.module';
 import { FavoritesModule } from './module/favorites/favorites.module';
+import { OrdersModule } from './module/orders/orders.module';
 import { ProductsModule } from './module/products/products.module';
 import { UsersModule } from './module/users/users.module';
 
@@ -26,7 +30,16 @@ import { UsersModule } from './module/users/users.module';
     // isGlobal: cualquier módulo puede inyectar la config sin re-importar
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, databaseConfig, jwtConfig, googleOAuthConfig],
+      load: [
+        appConfig,
+        databaseConfig,
+        jwtConfig,
+        googleOAuthConfig,
+        stripeConfig,
+        // Cloudinary: el correo del pedido construye las URLs de las fotos
+        cloudinaryConfig,
+        emailConfig,
+      ],
     }),
 
     // forRootAsync: la URI se lee de la config (no hardcodeada)
@@ -56,6 +69,7 @@ import { UsersModule } from './module/users/users.module';
     ProductsModule,
     CartModule,
     FavoritesModule,
+    OrdersModule,
   ],
   controllers: [AppController],
 

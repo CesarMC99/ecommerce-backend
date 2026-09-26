@@ -81,4 +81,21 @@ export interface ProductRepository {
   findByIds(ids: string[]): Promise<Product[]>;
   /** Facetas calculadas sobre los productos con ese estado */
   findFacets(status: ProductStatus): Promise<ProductFacets>;
+  /**
+   * Resta `quantity` unidades del stock de una talla SOLO si hay suficientes,
+   * en UNA operación atómica. Devuelve false si no había stock bastante.
+   * Atómica = dos compras simultáneas de la última unidad no pueden ganar
+   * las dos: la base de datos garantiza que solo una resta.
+   */
+  reserveStock(
+    productId: string,
+    size: string,
+    quantity: number,
+  ): Promise<boolean>;
+  /** Devuelve unidades al stock (pedido cancelado o expirado). */
+  releaseStock(
+    productId: string,
+    size: string,
+    quantity: number,
+  ): Promise<void>;
 }

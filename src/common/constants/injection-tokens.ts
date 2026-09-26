@@ -17,3 +17,10 @@ export const OAUTH_PROVIDERS = Symbol('OAUTH_PROVIDERS');
 export const PRODUCT_REPOSITORY = Symbol('PRODUCT_REPOSITORY');
 export const CART_REPOSITORY = Symbol('CART_REPOSITORY');
 export const FAVORITE_LIST_REPOSITORY = Symbol('FAVORITE_LIST_REPOSITORY');
+export const ORDER_REPOSITORY = Symbol('ORDER_REPOSITORY');
+// Pasarela de pago (Stripe hoy): los use-cases dependen de la interfaz
+export const PAYMENT_GATEWAY = Symbol('PAYMENT_GATEWAY');
+// Países y ciudades de envío (GeoNames hoy)
+export const LOCATION_DIRECTORY = Symbol('LOCATION_DIRECTORY');
+// Envío de correos (Resend hoy)
+export const EMAIL_SENDER = Symbol('EMAIL_SENDER');

@@ -10,6 +10,7 @@
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
+    "stripe:listen": "stripe listen --forward-to localhost:3000/webhooks/stripe --events payment_intent.succeeded,payment_intent.canceled,payment_intent.payment_failed",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "seed:products": "ts-node src/scripts/seed-products.ts",
@@ -33,6 +34,7 @@
     "@nestjs/mongoose": "^11.0.4",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
+    "all-the-cities": "^3.1.0",
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
@@ -40,12 +42,15 @@
     "cookie-parser": "^1.4.7",
     "google-auth-library": "^10.9.0",
     "graphql": "^17.0.2",
+    "libphonenumber-js": "^1.13.14",
     "mongoose": "^9.7.3",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "resend": "^6.30.0",
+    "rxjs": "^7.8.1",
+    "stripe": "^22.6.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
