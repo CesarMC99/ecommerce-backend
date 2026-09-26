@@ -109,3 +109,22 @@ export class CheckoutSessionType {
   })
   clientSecret: string;
 }
+
+/** Una página del historial "Mis pedidos" + datos para la paginación. */
+@ObjectType('OrderPage')
+export class OrderPageType {
+  @Field(() => [OrderType])
+  items: OrderType[];
+
+  @Field(() => Int)
+  totalCount: number;
+
+  @Field(() => Int)
+  page: number;
+
+  @Field(() => Int)
+  pageSize: number;
+
+  @Field(() => Int)
+  totalPages: number;
+}

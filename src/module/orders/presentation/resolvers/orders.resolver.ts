@@ -5,10 +5,16 @@ import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 import type { AuthenticatedUser } from '../../../auth/infrastructure/strategies/jwt.strategy';
 import { ConfirmOrderPaymentUseCase } from '../../application/use-cases/confirm-order-payment.use-case';
 import { GetOrderUseCase } from '../../application/use-cases/get-order.use-case';
+import { ListMyOrdersUseCase } from '../../application/use-cases/list-my-orders.use-case';
 import { StartCheckoutUseCase } from '../../application/use-cases/start-checkout.use-case';
 import type { Order } from '../../domain/entities/order.entity';
+import { MyOrdersArgs } from '../inputs/my-orders.args';
 import { CheckoutInput } from '../inputs/shipping-address.input';
-import { CheckoutSessionType, OrderType } from '../types/order.type';
+import {
+  CheckoutSessionType,
+  OrderPageType,
+  OrderType,
+} from '../types/order.type';
 
 /**
  * Resolver de pedidos y checkout. TODO exige sesión (el checkout es solo
@@ -21,7 +27,24 @@ export class OrdersResolver {
     private readonly startCheckoutUseCase: StartCheckoutUseCase,
     private readonly confirmOrderPaymentUseCase: ConfirmOrderPaymentUseCase,
     private readonly getOrderUseCase: GetOrderUseCase,
+    private readonly listMyOrdersUseCase: ListMyOrdersUseCase,
   ) {}
+
+  @Query(() => OrderPageType, {
+    description:
+      'Historial de pedidos pagados del usuario (más reciente primero)',
+  })
+  async myOrders(
+    @CurrentUser() user: AuthenticatedUser,
+    @Args() args: MyOrdersArgs,
+  ): Promise<OrderPageType> {
+    const result = await this.listMyOrdersUseCase.execute(
+      user.userId,
+      args.page,
+      args.pageSize,
+    );
+    return { ...result, items: result.items.map(toOrderType) };
+  }
 
   @Mutation(() => CheckoutSessionType, {
     description:

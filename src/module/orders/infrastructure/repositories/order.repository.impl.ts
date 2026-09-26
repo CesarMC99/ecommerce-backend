@@ -62,16 +62,29 @@ export class OrderRepositoryImpl implements OrderRepository {
     return docs.map((doc) => OrderMapper.toDomain(doc));
   }
 
-  async findByUser(userId: string, status?: OrderStatus): Promise<Order[]> {
+  async findPageByUser(
+    userId: string,
+    statuses: readonly OrderStatus[],
+    page: number,
+    pageSize: number,
+  ): Promise<{ items: Order[]; totalCount: number }> {
     const filter: QueryFilter<OrderDocument> = {
       userId: new Types.ObjectId(userId),
+      status: { $in: [...statuses] },
     };
-    if (status) filter.status = status;
-    const docs = await this.orderModel
-      .find(filter)
-      .sort({ createdAt: -1, _id: -1 })
-      .exec();
-    return docs.map((doc) => OrderMapper.toDomain(doc));
+    // Las dos consultas son independientes: Promise.all las lanza a la vez
+    const [docs, totalCount] = await Promise.all([
+      this.orderModel
+        .find(filter)
+        // _id al final: dos pedidos del mismo segundo siempre en el mismo
+        // orden, así ninguno se repite ni se pierde al cambiar de página
+        .sort({ createdAt: -1, _id: -1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .exec(),
+      this.orderModel.countDocuments(filter).exec(),
+    ]);
+    return { items: docs.map((doc) => OrderMapper.toDomain(doc)), totalCount };
   }
 
   async setPaymentIntentId(
