@@ -1,10 +1,12 @@
 import {
+  ArgumentsHost,
   Catch,
   ExceptionFilter,
   HttpException,
   HttpStatus,
   Logger,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { GraphQLError } from 'graphql';
 
 /**
@@ -30,9 +32,18 @@ export class GraphqlExceptionFilter implements ExceptionFilter {
     [HttpStatus.FORBIDDEN]: 'FORBIDDEN',
     [HttpStatus.NOT_FOUND]: 'NOT_FOUND',
     [HttpStatus.CONFLICT]: 'CONFLICT',
+    // Un servicio externo no configurado o caído (p. ej. Stripe sin clave)
+    [HttpStatus.SERVICE_UNAVAILABLE]: 'SERVICE_UNAVAILABLE',
   };
 
-  catch(exception: unknown) {
+  catch(exception: unknown, host: ArgumentsHost) {
+    // Peticiones REST (p. ej. el webhook de Stripe): en HTTP no basta con
+    // DEVOLVER el error como en GraphQL, hay que ESCRIBIR la respuesta; si
+    // no, la petición se quedaría colgada sin contestar
+    if (host.getType() === 'http') {
+      return this.replyHttp(exception, host.switchToHttp().getResponse());
+    }
+
     // Si ya es un GraphQLError (ej: error de sintaxis de la query), se respeta
     if (exception instanceof GraphQLError) {
       return exception;
@@ -46,13 +57,16 @@ export class GraphqlExceptionFilter implements ExceptionFilter {
 
       // El ValidationPipe empaqueta los mensajes en response.message
       const response = exception.getResponse();
-      const message =
+      const raw =
         typeof response === 'object' && response !== null
-          ? String(
-              (response as { message?: string | string[] }).message ??
-                exception.message,
-            )
+          ? ((response as { message?: string | string[] }).message ??
+            exception.message)
           : exception.message;
+      // En inputs anidados el ValidationPipe antepone la ruta del campo
+      // ("shippingAddress.El teléfono..."): se quita, el mensaje es para humanos
+      const message = Array.isArray(raw)
+        ? raw.map((text) => text.replace(/^(\w+\.)+/, '')).join(',')
+        : raw;
 
       return new GraphQLError(message, { extensions: { code, status } });
     }
@@ -62,5 +76,17 @@ export class GraphqlExceptionFilter implements ExceptionFilter {
     return new GraphQLError('Error interno del servidor', {
       extensions: { code: 'INTERNAL_SERVER_ERROR' },
     });
+  }
+
+  /** Respuesta JSON para REST, con las mismas reglas: nada interno se filtra. */
+  private replyHttp(exception: unknown, res: Response): void {
+    if (exception instanceof HttpException) {
+      res.status(exception.getStatus()).json(exception.getResponse());
+      return;
+    }
+    this.logger.error(exception);
+    res
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .json({ statusCode: 500, message: 'Error interno del servidor' });
   }
 }

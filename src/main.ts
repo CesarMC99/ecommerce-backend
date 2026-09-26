@@ -7,7 +7,12 @@ import { appConfig } from './config';
 import type { AppConfig } from './config';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, {});
+  // rawBody: guarda también los bytes ORIGINALES de cada petición en
+  // req.rawBody. El webhook de Stripe los necesita para verificar la firma
+  // (si se re-serializa el JSON, la firma ya no coincide)
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    rawBody: true,
+  });
 
   // Config tipada: appConfig.KEY es un token de inyección que el contenedor
   // de Nest resuelve al objeto ya parseado (en lugar de leer process.env)

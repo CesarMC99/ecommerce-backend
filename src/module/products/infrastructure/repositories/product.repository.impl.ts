@@ -98,6 +98,42 @@ export class ProductRepositoryImpl implements ProductRepository {
     return docs.map((doc) => ProductMapper.toDomain(doc));
   }
 
+  async reserveStock(
+    productId: string,
+    size: string,
+    quantity: number,
+  ): Promise<boolean> {
+    if (!isValidObjectId(productId)) return false;
+    // El FILTRO exige que esa talla tenga stock >= quantity; el `$` del
+    // update apunta a la talla que cumplió el $elemMatch. Si otra compra
+    // se llevó las unidades justo antes, el filtro ya no coincide y no se
+    // modifica nada: comprobar y restar son UNA sola operación
+    const result = await this.productModel
+      .updateOne(
+        {
+          _id: productId,
+          sizes: { $elemMatch: { size, stock: { $gte: quantity } } },
+        },
+        { $inc: { 'sizes.$.stock': -quantity } },
+      )
+      .exec();
+    return result.modifiedCount === 1;
+  }
+
+  async releaseStock(
+    productId: string,
+    size: string,
+    quantity: number,
+  ): Promise<void> {
+    if (!isValidObjectId(productId)) return;
+    await this.productModel
+      .updateOne(
+        { _id: productId, 'sizes.size': size },
+        { $inc: { 'sizes.$.stock': quantity } },
+      )
+      .exec();
+  }
+
   async findFacets(status: ProductStatus): Promise<ProductFacets> {
     // $facet ejecuta VARIAS agregaciones sobre los mismos documentos en una
     // sola ida y vuelta a la base de datos (en vez de 3 consultas)

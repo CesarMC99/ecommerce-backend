@@ -59,6 +59,25 @@ enum CartLineUnavailableReason {
   SIZE_NOT_FOUND
 }
 
+input CheckoutInput {
+  """Correo para el recibo; puede no ser el de la cuenta"""
+  email: String!
+  shippingAddress: ShippingAddressInput!
+}
+
+type CheckoutSession {
+  """
+  Secreto del PaymentIntent: solo permite pagar ESTE pedido, por ESTE importe
+  """
+  clientSecret: String!
+  order: Order!
+}
+
+type City {
+  countryCode: String!
+  name: String!
+}
+
 """
 A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
 """
@@ -79,6 +98,9 @@ type Mutation {
 
   """Vacía el carrito"""
   clearCart: Cart!
+
+  """Comprueba el pago con Stripe y actualiza el pedido"""
+  confirmOrderPayment(orderId: ID!): Order!
 
   """Inicia sesión con email y contraseña"""
   login(input: LoginInput!): AuthPayload!
@@ -105,11 +127,69 @@ type Mutation {
   """Registra un usuario con email y contraseña"""
   register(input: RegisterInput!): AuthPayload!
 
+  """
+  Crea el pedido con el carrito actual, reserva el stock y prepara el pago
+  """
+  startCheckout(input: CheckoutInput!): CheckoutSession!
+
   """Añade o quita un producto de favoritos"""
   toggleFavorite(productId: ID!): [ID!]!
 
   """Fija la cantidad de una línea (0 la elimina)"""
   updateCartItem(input: UpdateCartItemInput!): Cart!
+}
+
+type Order {
+  createdAt: DateTime!
+
+  """Correo de contacto del pedido"""
+  email: String!
+
+  """Límite para pagar antes de que caduque"""
+  expiresAt: DateTime!
+  id: ID!
+  lines: [OrderLine!]!
+
+  """Número legible: AMB-XXXXXXXX"""
+  number: String!
+  paidAt: DateTime
+
+  """En céntimos (0 = gratis)"""
+  shipping: Int!
+  shippingAddress: ShippingAddress!
+  status: OrderStatus!
+
+  """En céntimos"""
+  subtotal: Int!
+
+  """En céntimos"""
+  total: Int!
+}
+
+type OrderLine {
+  colorName: String!
+
+  """publicId de Cloudinary de la foto principal"""
+  imagePublicId: String
+
+  """Precio × cantidad, en céntimos"""
+  lineTotal: Int!
+  name: String!
+  productId: String!
+  quantity: Int!
+  size: String!
+
+  """Slug en el momento de la compra (enlace a la ficha)"""
+  slug: String!
+
+  """Precio unitario pagado, en céntimos"""
+  unitPrice: Int!
+}
+
+enum OrderStatus {
+  CANCELLED
+  PAID
+  PENDING_PAYMENT
 }
 
 type Product {
@@ -245,6 +325,9 @@ type Query {
   """Ids de mis favoritos, el más reciente primero"""
   myFavoriteIds: [ID!]!
 
+  """Un pedido del usuario"""
+  order(id: ID!): Order!
+
   """Un producto por su slug; null si no existe o no está publicado"""
   product(slug: String!): Product
 
@@ -264,12 +347,56 @@ type Query {
     """Slug del producto que se está viendo"""
     slug: String!
   ): [Product!]!
+
+  """Busca ciudades de un país (sin distinguir tildes)"""
+  searchCities(countryCode: String!, limit: Int! = 20, search: String! = ""): [City!]!
+
+  """Países a los que envía la tienda"""
+  shippingCountries: [ShippingCountry!]!
 }
 
 input RegisterInput {
   email: String!
   name: String!
   password: String!
+}
+
+type ShippingAddress {
+  city: String!
+
+  """Código ISO del país (ES, MX...)"""
+  country: String!
+  fullName: String!
+  line1: String!
+
+  """Formato internacional: +34612345678"""
+  phone: String!
+}
+
+input ShippingAddressInput {
+  """Ciudad elegida del listado (searchCities)"""
+  city: String!
+
+  """Código ISO del país (shippingCountries)"""
+  country: String!
+  fullName: String!
+
+  """Calle, número, piso..."""
+  line1: String!
+
+  """Número nacional o internacional; solo cifras"""
+  phone: String!
+}
+
+type ShippingCountry {
+  """Código ISO 3166-1 alfa-2 (ES, MX...)"""
+  code: String!
+
+  """Prefijo telefónico sin "+" (34, 52...)"""
+  dialCode: String!
+
+  """Nombre en español"""
+  name: String!
 }
 
 input UpdateCartItemInput {
