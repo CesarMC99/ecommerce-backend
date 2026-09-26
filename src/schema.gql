@@ -186,6 +186,14 @@ type OrderLine {
   unitPrice: Int!
 }
 
+type OrderPage {
+  items: [Order!]!
+  page: Int!
+  pageSize: Int!
+  totalCount: Int!
+  totalPages: Int!
+}
+
 enum OrderStatus {
   CANCELLED
   PAID
@@ -324,6 +332,9 @@ type Query {
 
   """Ids de mis favoritos, el más reciente primero"""
   myFavoriteIds: [ID!]!
+
+  """Historial de pedidos pagados del usuario (más reciente primero)"""
+  myOrders(page: Int! = 1, pageSize: Int! = 10): OrderPage!
 
   """Un pedido del usuario"""
   order(id: ID!): Order!

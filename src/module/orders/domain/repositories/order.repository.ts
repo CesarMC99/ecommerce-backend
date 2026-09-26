@@ -35,8 +35,13 @@ export interface OrderRepository {
   findPendingByUser(userId: string): Promise<Order | null>;
   /** Pedidos pendientes cuyo plazo de pago ya venció */
   findExpiredPending(now: Date, limit: number): Promise<Order[]>;
-  /** Pedidos del usuario, el más reciente primero (para "Mis pedidos") */
-  findByUser(userId: string, status?: OrderStatus): Promise<Order[]>;
+  /** Una página de pedidos del usuario en esos estados, el más reciente primero */
+  findPageByUser(
+    userId: string,
+    statuses: readonly OrderStatus[],
+    page: number,
+    pageSize: number,
+  ): Promise<{ items: Order[]; totalCount: number }>;
   setPaymentIntentId(orderId: string, paymentIntentId: string): Promise<void>;
   /** PENDING → PAID. null si el pedido ya no estaba pendiente */
   markPaidIfPending(orderId: string, paidAt: Date): Promise<Order | null>;

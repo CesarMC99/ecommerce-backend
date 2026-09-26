@@ -14,6 +14,7 @@ import { OrderMailer } from './application/services/order-mailer.service';
 import { ConfirmOrderPaymentUseCase } from './application/use-cases/confirm-order-payment.use-case';
 import { GetOrderUseCase } from './application/use-cases/get-order.use-case';
 import { HandlePaymentEventUseCase } from './application/use-cases/handle-payment-event.use-case';
+import { ListMyOrdersUseCase } from './application/use-cases/list-my-orders.use-case';
 import { StartCheckoutUseCase } from './application/use-cases/start-checkout.use-case';
 import { StripePaymentGateway } from './infrastructure/payments/stripe-payment.gateway';
 import {
@@ -49,6 +50,7 @@ import { OrdersResolver } from './presentation/resolvers/orders.resolver';
     StartCheckoutUseCase,
     ConfirmOrderPaymentUseCase,
     GetOrderUseCase,
+    ListMyOrdersUseCase,
     HandlePaymentEventUseCase,
     OrdersResolver,
   ],

@@ -25,6 +25,10 @@ import { OrderLifecycleService } from '../services/order-lifecycle.service';
 import type { OrderMailer } from '../services/order-mailer.service';
 import { GetOrderUseCase } from './get-order.use-case';
 import { HandlePaymentEventUseCase } from './handle-payment-event.use-case';
+import {
+  ListMyOrdersUseCase,
+  MAX_ORDERS_PAGE_SIZE,
+} from './list-my-orders.use-case';
 import { StartCheckoutUseCase } from './start-checkout.use-case';
 
 /**
@@ -81,10 +85,20 @@ class InMemoryOrderRepository implements OrderRepository {
     );
   }
 
-  findByUser(userId: string) {
-    return Promise.resolve(
-      [...this.orders.values()].filter((order) => order.userId === userId),
-    );
+  findPageByUser(
+    userId: string,
+    statuses: readonly OrderStatus[],
+    page: number,
+    pageSize: number,
+  ) {
+    // Más reciente primero (se insertan en orden: basta con invertir)
+    const matching = [...this.orders.values()]
+      .filter((o) => o.userId === userId && statuses.includes(o.status))
+      .reverse();
+    return Promise.resolve({
+      items: matching.slice((page - 1) * pageSize, page * pageSize),
+      totalCount: matching.length,
+    });
   }
 
   setPaymentIntentId(orderId: string, paymentIntentId: string) {
@@ -496,6 +510,54 @@ describe('Checkout y pedidos', () => {
       expect(ctx.orderRepository.orders.get(order.id)?.status).toBe(
         OrderStatus.CANCELLED,
       );
+    });
+  });
+
+  describe('ListMyOrdersUseCase', () => {
+    it('solo muestra pedidos pagados, el más reciente primero', async () => {
+      const ctx = setup();
+      // Pedido 1: pagado
+      const first = await ctx.start();
+      ctx.setPaymentStatus('succeeded');
+      await ctx.lifecycle.syncWithPayment(first.order);
+      // Pedido 2: pagado también
+      await ctx.cartRepository.save(
+        ctx.getCart().addItem({ productId: 'coat', size: 'M', quantity: 1 }),
+      );
+      ctx.setPaymentStatus('requires_payment');
+      const second = await ctx.start();
+      ctx.setPaymentStatus('succeeded');
+      await ctx.lifecycle.syncWithPayment(second.order);
+      // Pedido 3: se queda pendiente (no debe aparecer)
+      await ctx.cartRepository.save(
+        ctx.getCart().addItem({ productId: 'coat', size: 'M', quantity: 1 }),
+      );
+      ctx.setPaymentStatus('requires_payment');
+      await ctx.start();
+
+      const page = await new ListMyOrdersUseCase(ctx.orderRepository).execute(
+        'user-1',
+        1,
+        10,
+      );
+
+      expect(page.totalCount).toBe(2);
+      expect(page.items.map((order) => order.id)).toEqual([
+        second.order.id,
+        first.order.id,
+      ]);
+      expect(page.totalPages).toBe(1);
+    });
+
+    it('limita el tamaño de página y calcula el total de páginas', async () => {
+      const ctx = setup();
+      const useCase = new ListMyOrdersUseCase(ctx.orderRepository);
+
+      const page = await useCase.execute('user-1', 0, 1000);
+
+      expect(page.page).toBe(1);
+      expect(page.pageSize).toBe(MAX_ORDERS_PAGE_SIZE);
+      expect(page.totalPages).toBe(1);
     });
   });
 

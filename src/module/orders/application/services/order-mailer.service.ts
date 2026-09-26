@@ -26,8 +26,8 @@ export class OrderMailer {
   async sendOrderConfirmation(order: Order): Promise<void> {
     try {
       const email = renderOrderConfirmationEmail(order, {
-        // TODO(mis-pedidos): apuntar a /pedidos/:id cuando exista esa página
-        orderUrl: `${this.app.frontendUrl}/checkout/confirmacion?pedido=${order.id}`,
+        // Detalle del pedido en "Mis pedidos" (pide iniciar sesión si hace falta)
+        orderUrl: `${this.app.frontendUrl}/pedidos/${order.id}`,
         // Miniatura recortada por Cloudinary. f_jpg y no f_auto: Outlook no
         // entiende WebP/AVIF, y en correo manda la compatibilidad
         imageUrl: (publicId) =>
