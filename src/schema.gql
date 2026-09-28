@@ -136,6 +136,16 @@ type Mutation {
   register(input: RegisterInput!): AuthPayload!
 
   """
+  Envía un enlace para restablecer la contraseña. Responde igual exista o no el correo
+  """
+  requestPasswordReset(input: RequestPasswordResetInput!): Boolean!
+
+  """
+  Fija una contraseña nueva con el enlace del correo y cierra todas las sesiones
+  """
+  resetPassword(input: ResetPasswordInput!): Boolean!
+
+  """
   Crea el pedido con el carrito actual, reserva el stock y prepara el pago
   """
   startCheckout(input: CheckoutInput!): CheckoutSession!
@@ -381,6 +391,17 @@ input RegisterInput {
   email: String!
   name: String!
   password: String!
+}
+
+input RequestPasswordResetInput {
+  email: String!
+}
+
+input ResetPasswordInput {
+  newPassword: String!
+
+  """Token del enlace del correo"""
+  token: String!
 }
 
 type ShippingAddress {

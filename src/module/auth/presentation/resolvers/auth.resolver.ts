@@ -13,10 +13,16 @@ import { LoginWithOAuthUseCase } from '../../application/use-cases/login-with-oa
 import { LogoutUseCase } from '../../application/use-cases/logout.use-case';
 import { RefreshTokensUseCase } from '../../application/use-cases/refresh-tokens.use-case';
 import { RegisterUserUseCase } from '../../application/use-cases/register-user.use-case';
+import { RequestPasswordResetUseCase } from '../../application/use-cases/request-password-reset.use-case';
+import { ResetPasswordUseCase } from '../../application/use-cases/reset-password.use-case';
 import { UpdateProfileUseCase } from '../../application/use-cases/update-profile.use-case';
 import type { AuthenticatedUser } from '../../infrastructure/strategies/jwt.strategy';
 import { LoginWithGoogleInput } from '../inputs/login-with-google.input';
 import { LoginInput } from '../inputs/login.input';
+import {
+  RequestPasswordResetInput,
+  ResetPasswordInput,
+} from '../inputs/password-reset.inputs';
 import {
   ChangePasswordInput,
   UpdateProfileInput,
@@ -43,6 +49,8 @@ export class AuthResolver {
     private readonly logoutUseCase: LogoutUseCase,
     private readonly updateProfileUseCase: UpdateProfileUseCase,
     private readonly changePasswordUseCase: ChangePasswordUseCase,
+    private readonly requestPasswordResetUseCase: RequestPasswordResetUseCase,
+    private readonly resetPasswordUseCase: ResetPasswordUseCase,
     private readonly refreshTokenCookie: RefreshTokenCookie,
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository,
@@ -150,6 +158,29 @@ export class AuthResolver {
       // La sesión desde la que se cambia se mantiene; las demás se cierran
       currentRefreshToken: this.refreshTokenCookie.read(context),
     });
+    return true;
+  }
+
+  @Mutation(() => Boolean, {
+    description:
+      'Envía un enlace para restablecer la contraseña. Responde igual exista o no el correo',
+  })
+  async requestPasswordReset(
+    @Args('input') input: RequestPasswordResetInput,
+  ): Promise<boolean> {
+    await this.requestPasswordResetUseCase.execute(input.email);
+    // SIEMPRE true: la respuesta no revela si el correo tiene cuenta
+    return true;
+  }
+
+  @Mutation(() => Boolean, {
+    description:
+      'Fija una contraseña nueva con el enlace del correo y cierra todas las sesiones',
+  })
+  async resetPassword(
+    @Args('input') input: ResetPasswordInput,
+  ): Promise<boolean> {
+    await this.resetPasswordUseCase.execute(input.token, input.newPassword);
     return true;
   }
 

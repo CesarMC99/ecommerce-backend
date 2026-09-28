@@ -9,9 +9,17 @@ import { PassportModule } from '@nestjs/passport';
 import {
   OAUTH_PROVIDERS,
   PASSWORD_HASHER,
+  PASSWORD_RESET_TOKEN_REPOSITORY,
   REFRESH_TOKEN_REPOSITORY,
   TOKEN_GENERATOR,
 } from '../../common/constants/injection-tokens';
+import { RequestPasswordResetUseCase } from './application/use-cases/request-password-reset.use-case';
+import { ResetPasswordUseCase } from './application/use-cases/reset-password.use-case';
+import {
+  PasswordResetTokenDocument,
+  PasswordResetTokenSchema,
+} from './infrastructure/persistence/password-reset-token.schema';
+import { PasswordResetTokenRepositoryImpl } from './infrastructure/repositories/password-reset-token.repository.impl';
 import { UsersModule } from '../users/users.module';
 import { AuthTokenService } from './application/services/auth-token.service';
 import { LoginWithCredentialsUseCase } from './application/use-cases/login-with-credentials.use-case';
@@ -48,6 +56,10 @@ import { AuthResolver } from './presentation/resolvers/auth.resolver';
     JwtModule.register({}),
     MongooseModule.forFeature([
       { name: RefreshTokenDocument.name, schema: RefreshTokenSchema },
+      {
+        name: PasswordResetTokenDocument.name,
+        schema: PasswordResetTokenSchema,
+      },
     ]),
   ],
   providers: [
@@ -64,6 +76,8 @@ import { AuthResolver } from './presentation/resolvers/auth.resolver';
     LogoutUseCase,
     UpdateProfileUseCase,
     ChangePasswordUseCase,
+    RequestPasswordResetUseCase,
+    ResetPasswordUseCase,
     AccountMailer,
 
     // --- Infraestructura: estrategia passport para validar access tokens ---
@@ -73,6 +87,10 @@ import { AuthResolver } from './presentation/resolvers/auth.resolver';
     { provide: PASSWORD_HASHER, useClass: BcryptPasswordHasher },
     { provide: TOKEN_GENERATOR, useClass: JwtTokenGenerator },
     { provide: REFRESH_TOKEN_REPOSITORY, useClass: RefreshTokenRepositoryImpl },
+    {
+      provide: PASSWORD_RESET_TOKEN_REPOSITORY,
+      useClass: PasswordResetTokenRepositoryImpl,
+    },
 
     // --- Registro de proveedores OAuth ---
     // Para añadir GitHub/Apple: crear su clase en infrastructure/oauth
