@@ -83,6 +83,16 @@ export class ProductFilterInput {
   @IsOptional()
   @IsBoolean()
   featured?: boolean;
+
+  @Field({
+    nullable: true,
+    description:
+      'Texto del buscador: nombre, tipo, color o detalles (sin distinguir tildes)',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(60, { message: 'La búsqueda no puede superar 60 caracteres' })
+  search?: string;
 }
 
 /** Argumentos de la query `productsByIds` (página de favoritos). */

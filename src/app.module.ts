@@ -25,6 +25,10 @@ import { OrdersModule } from './module/orders/orders.module';
 import { ProductsModule } from './module/products/products.module';
 import { UsersModule } from './module/users/users.module';
 
+// Se lee directamente de process.env porque GraphQLModule.forRoot se
+// configura antes de que exista la config tipada (ConfigModule)
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+
 @Module({
   imports: [
     // isGlobal: cualquier módulo puede inyectar la config sin re-importar
@@ -53,9 +57,18 @@ import { UsersModule } from './module/users/users.module';
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       playground: false,
-      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+      // En producción el esquema se genera en memoria (no hace falta
+      // escribir src/schema.gql en el servidor). En local sí, para Codegen
+      autoSchemaFile: IS_PRODUCTION
+        ? true
+        : join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
-      plugins: [ApolloServerPluginLandingPageLocalDefault()],
+      // El explorador de GraphQL (Apollo Sandbox) solo en desarrollo: en
+      // producción no hay por qué enseñar la API a cualquiera. Apollo ya
+      // desactiva la introspección cuando NODE_ENV=production
+      plugins: IS_PRODUCTION
+        ? []
+        : [ApolloServerPluginLandingPageLocalDefault()],
       // Exponemos req/res en el contexto GraphQL: los resolvers de auth los
       // necesitan para leer/escribir la cookie httpOnly del refresh token
       context: ({ req, res }: { req: Request; res: Response }) => ({

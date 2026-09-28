@@ -9,6 +9,7 @@ import {
   type ProductRepository,
   type ProductSearchResult,
 } from '../../domain/repositories/product.repository';
+import { toSearchTerms } from '../../domain/services/search-terms';
 
 export const DEFAULT_PAGE_SIZE = 12;
 export const MAX_PAGE_SIZE = 48;
@@ -21,6 +22,8 @@ export interface ListProductsCommand {
   minRating?: number;
   onSale?: boolean;
   featured?: boolean;
+  /** Texto libre del buscador ("abrigo camel") */
+  search?: string;
   sort?: ProductSort;
   page?: number;
   pageSize?: number;
@@ -66,6 +69,8 @@ export class ListProductsUseCase {
       minRating: command.minRating,
       onSale: command.onSale,
       featured: command.featured,
+      // Búsqueda vacía o solo símbolos ("  ", "!!") = sin búsqueda
+      searchTerms: command.search ? toSearchTerms(command.search) : undefined,
       sort: command.sort ?? ProductSort.FEATURED,
       page,
       pageSize,

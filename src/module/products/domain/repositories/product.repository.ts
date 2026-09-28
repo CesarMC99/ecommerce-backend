@@ -38,6 +38,11 @@ export interface ProductSearchCriteria {
   featured?: boolean;
   /** Slug a excluir (p. ej. el producto que ya se está viendo) */
   excludeSlug?: string;
+  /**
+   * Palabras a buscar (ya normalizadas con toSearchTerms). El producto debe
+   * contener TODAS en su nombre, tipo, color o detalles
+   */
+  searchTerms?: string[];
   sort: ProductSort;
   /** Página empezando en 1 */
   page: number;

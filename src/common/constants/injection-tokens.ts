@@ -24,3 +24,7 @@ export const PAYMENT_GATEWAY = Symbol('PAYMENT_GATEWAY');
 export const LOCATION_DIRECTORY = Symbol('LOCATION_DIRECTORY');
 // Envío de correos (Resend hoy)
 export const EMAIL_SENDER = Symbol('EMAIL_SENDER');
+// Enlaces de "recuperar contraseña" (solo se guarda su hash)
+export const PASSWORD_RESET_TOKEN_REPOSITORY = Symbol(
+  'PASSWORD_RESET_TOKEN_REPOSITORY',
+);
