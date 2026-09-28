@@ -38,6 +38,36 @@ const exactInsensitive = (value: string) => ({
   $options: 'i',
 });
 
+/** Cada vocal (y la ñ) acepta sus variantes con tilde o diéresis. */
+const ACCENT_VARIANTS: Record<string, string> = {
+  a: '[aáàäâ]',
+  e: '[eéèëê]',
+  i: '[iíìïî]',
+  o: '[oóòöô]',
+  u: '[uúùüû]',
+  n: '[nñ]',
+};
+
+/**
+ * Palabra ya normalizada ("cafe") → patrón que encuentra también "Café".
+ * MongoDB compara el texto tal cual está guardado, con sus tildes: por eso
+ * la tolerancia a tildes se construye en el patrón. Se escapa todo lo
+ * demás para que nadie pueda inyectar una expresión regular propia.
+ */
+export const accentInsensitivePattern = (term: string) =>
+  // Solo al PRINCIPIO de una palabra (tras el inicio del texto o algo que
+  // no sea letra): "abri" encuentra "Abrigo" pero no "Fabricado"
+  '(?:^|[^a-z0-9áéíóúüñàèìòùäëïöâêîôû])' +
+  [...term]
+    .map(
+      (char) =>
+        ACCENT_VARIANTS[char] ?? char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+    )
+    .join('');
+
+/** Campos en los que se busca cada palabra. */
+const SEARCH_FIELDS = ['name', 'type', 'color.name', 'details'] as const;
+
 /** Forma del resultado de la agregación de facetas ($facet). */
 interface FacetsAggregation {
   colors: { _id: string; hex: string }[];
@@ -209,6 +239,17 @@ export class ProductRepositoryImpl implements ProductRepository {
           stock: { $gt: 0 },
         },
       };
+    }
+    if (criteria.searchTerms?.length) {
+      // TODAS las palabras deben aparecer ($and), cada una en CUALQUIERA de
+      // los campos ($or): "abrigo camel" encuentra el abrigo de color camel,
+      // no todos los abrigos más todo lo camel. Sin anclar (^...$): "abri"
+      // ya encuentra "Abrigo" mientras se escribe
+      filter.$and = criteria.searchTerms.map((term) => ({
+        $or: SEARCH_FIELDS.map((field) => ({
+          [field]: { $regex: accentInsensitivePattern(term), $options: 'i' },
+        })),
+      }));
     }
     if (criteria.onSale) {
       // Misma regla que Product.isOnSale(): hay precio anterior Y es mayor.

@@ -303,6 +303,11 @@ input ProductFilterInput {
   """Solo productos rebajados"""
   onSale: Boolean
 
+  """
+  Texto del buscador: nombre, tipo, color o detalles (sin distinguir tildes)
+  """
+  search: String
+
   """Talla, p. ej. M: solo productos con stock en esa talla"""
   size: String
 }
