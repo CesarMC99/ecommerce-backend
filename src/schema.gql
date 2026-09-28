@@ -59,6 +59,11 @@ enum CartLineUnavailableReason {
   SIZE_NOT_FOUND
 }
 
+input ChangePasswordInput {
+  currentPassword: String!
+  newPassword: String!
+}
+
 input CheckoutInput {
   """Correo para el recibo; puede no ser el de la cuenta"""
   email: String!
@@ -95,6 +100,9 @@ input LoginWithGoogleInput {
 type Mutation {
   """Añade unidades de un producto"""
   addToCart(input: CartItemInput!): Cart!
+
+  """Cambia la contraseña (exige la actual) y cierra las demás sesiones"""
+  changePassword(input: ChangePasswordInput!): Boolean!
 
   """Vacía el carrito"""
   clearCart: Cart!
@@ -137,6 +145,9 @@ type Mutation {
 
   """Fija la cantidad de una línea (0 la elimina)"""
   updateCartItem(input: UpdateCartItemInput!): Cart!
+
+  """Edita los datos del perfil"""
+  updateProfile(input: UpdateProfileInput!): User!
 }
 
 type Order {
@@ -418,10 +429,17 @@ input UpdateCartItemInput {
   size: String!
 }
 
+input UpdateProfileInput {
+  name: String!
+}
+
 type User {
   avatarUrl: String
   createdAt: DateTime!
   email: String!
+
+  """Si la cuenta tiene contraseña propia"""
+  hasPassword: Boolean!
   id: ID!
   name: String!
   roles: [String!]!

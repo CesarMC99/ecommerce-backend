@@ -21,4 +21,12 @@ export interface RefreshTokenRepository {
    * detecta reuso de un token (posible robo) o para un "logout global".
    */
   revokeAllForUser(userId: string): Promise<void>;
+  /**
+   * Revoca todas las sesiones del usuario MENOS la indicada (la del
+   * dispositivo desde el que cambia la contraseña: no se le echa a él)
+   */
+  revokeAllForUserExcept(
+    userId: string,
+    keepTokenHash: string | null,
+  ): Promise<void>;
 }

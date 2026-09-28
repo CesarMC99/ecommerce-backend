@@ -65,4 +65,28 @@ export class UserRepositoryImpl implements UserRepository {
     }
     return UserMapper.toDomain(doc);
   }
+
+  async updateName(userId: string, name: string): Promise<User> {
+    const doc = await this.userModel
+      .findByIdAndUpdate(
+        userId,
+        { $set: { name } },
+        // runValidators: aplica las reglas del schema (required, maxlength...)
+        { new: true, runValidators: true },
+      )
+      .exec();
+    if (!doc) {
+      throw new Error(`Usuario ${userId} no encontrado al cambiar el nombre`);
+    }
+    return UserMapper.toDomain(doc);
+  }
+
+  async updatePasswordHash(
+    userId: string,
+    passwordHash: string,
+  ): Promise<void> {
+    await this.userModel
+      .updateOne({ _id: userId }, { $set: { passwordHash } })
+      .exec();
+  }
 }
