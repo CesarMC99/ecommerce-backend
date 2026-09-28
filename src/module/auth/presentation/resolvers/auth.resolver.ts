@@ -7,14 +7,20 @@ import type { User } from '../../../users/domain/entities/user.entity';
 import type { UserRepository } from '../../../users/domain/repositories/user.repository';
 import { UserType } from '../../../users/presentation/types/user.type';
 import type { AuthResult } from '../../application/services/auth-token.service';
+import { ChangePasswordUseCase } from '../../application/use-cases/change-password.use-case';
 import { LoginWithCredentialsUseCase } from '../../application/use-cases/login-with-credentials.use-case';
 import { LoginWithOAuthUseCase } from '../../application/use-cases/login-with-oauth.use-case';
 import { LogoutUseCase } from '../../application/use-cases/logout.use-case';
 import { RefreshTokensUseCase } from '../../application/use-cases/refresh-tokens.use-case';
 import { RegisterUserUseCase } from '../../application/use-cases/register-user.use-case';
+import { UpdateProfileUseCase } from '../../application/use-cases/update-profile.use-case';
 import type { AuthenticatedUser } from '../../infrastructure/strategies/jwt.strategy';
 import { LoginWithGoogleInput } from '../inputs/login-with-google.input';
 import { LoginInput } from '../inputs/login.input';
+import {
+  ChangePasswordInput,
+  UpdateProfileInput,
+} from '../inputs/profile.inputs';
 import { RegisterInput } from '../inputs/register.input';
 import type { GqlContext } from '../refresh-token-cookie';
 import { RefreshTokenCookie } from '../refresh-token-cookie';
@@ -35,6 +41,8 @@ export class AuthResolver {
     private readonly loginWithOAuthUseCase: LoginWithOAuthUseCase,
     private readonly refreshTokensUseCase: RefreshTokensUseCase,
     private readonly logoutUseCase: LogoutUseCase,
+    private readonly updateProfileUseCase: UpdateProfileUseCase,
+    private readonly changePasswordUseCase: ChangePasswordUseCase,
     private readonly refreshTokenCookie: RefreshTokenCookie,
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository,
@@ -112,6 +120,39 @@ export class AuthResolver {
     return this.toUserType(user);
   }
 
+  @Mutation(() => UserType, { description: 'Edita los datos del perfil' })
+  @UseGuards(JwtAuthGuard)
+  async updateProfile(
+    @CurrentUser() authUser: AuthenticatedUser,
+    @Args('input') input: UpdateProfileInput,
+  ): Promise<UserType> {
+    const user = await this.updateProfileUseCase.execute(
+      authUser.userId,
+      input,
+    );
+    return this.toUserType(user);
+  }
+
+  @Mutation(() => Boolean, {
+    description:
+      'Cambia la contraseña (exige la actual) y cierra las demás sesiones',
+  })
+  @UseGuards(JwtAuthGuard)
+  async changePassword(
+    @CurrentUser() authUser: AuthenticatedUser,
+    @Args('input') input: ChangePasswordInput,
+    @Context() context: GqlContext,
+  ): Promise<boolean> {
+    await this.changePasswordUseCase.execute({
+      userId: authUser.userId,
+      currentPassword: input.currentPassword,
+      newPassword: input.newPassword,
+      // La sesión desde la que se cambia se mantiene; las demás se cierran
+      currentRefreshToken: this.refreshTokenCookie.read(context),
+    });
+    return true;
+  }
+
   /**
    * Punto único de traducción AuthResult → AuthPayload + cookie.
    * Todas las mutaciones que emiten tokens pasan por aquí (DRY).
@@ -136,6 +177,7 @@ export class AuthResolver {
       email: user.email,
       roles: user.roles,
       avatarUrl: user.avatarUrl,
+      hasPassword: user.hasLocalCredentials(),
       createdAt: user.createdAt,
     };
   }

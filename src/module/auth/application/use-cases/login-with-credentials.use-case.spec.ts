@@ -13,6 +13,8 @@ describe('LoginWithCredentialsUseCase', () => {
       findByOAuthAccount: jest.fn(),
       create: jest.fn(),
       addOAuthAccount: jest.fn(),
+      updateName: jest.fn(),
+      updatePasswordHash: jest.fn(),
     };
     const passwordHasher = {
       hash: jest.fn(),

@@ -1,3 +1,7 @@
+import {
+  escapeHtml,
+  type RenderedEmail,
+} from '../../../notifications/templates/email-layout';
 import type { Order } from '../../domain/entities/order.entity';
 
 export interface OrderEmailContext {
@@ -5,12 +9,6 @@ export interface OrderEmailContext {
   orderUrl: string;
   /** publicId de Cloudinary → URL de la miniatura (null si no hay foto) */
   imageUrl: (publicId: string) => string;
-}
-
-export interface RenderedEmail {
-  subject: string;
-  html: string;
-  text: string;
 }
 
 // Colores de ÁMBAR (globals.css del frontend)
@@ -31,19 +29,6 @@ const money = (cents: number) =>
 
 const countryName = (code: string) =>
   new Intl.DisplayNames(['es'], { type: 'region' }).of(code) ?? code;
-
-/**
- * Escapa el texto que viene del CLIENTE (nombre, dirección...). Sin esto,
- * alguien que se llame "<img src=x onerror=...>" inyectaría HTML en el
- * correo: nunca se mete texto de usuario en HTML sin escapar.
- */
-export const escapeHtml = (value: string) =>
-  value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
 
 /**
  * Correo "Pedido confirmado". Función PURA (sin Nest ni Resend): recibe el

@@ -31,4 +31,8 @@ export interface UserRepository {
   create(data: CreateUserData): Promise<User>;
   /** Vincula una nueva cuenta OAuth a un usuario existente. */
   addOAuthAccount(userId: string, account: OAuthAccount): Promise<User>;
+  /** Cambia el nombre visible. Devuelve el usuario actualizado */
+  updateName(userId: string, name: string): Promise<User>;
+  /** Guarda el hash de una contraseña nueva (nunca la contraseña en claro) */
+  updatePasswordHash(userId: string, passwordHash: string): Promise<void>;
 }

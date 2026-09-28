@@ -1,9 +1,7 @@
 import { Order, OrderStatus } from '../../domain/entities/order.entity';
 import { OrderMailer } from '../services/order-mailer.service';
-import {
-  escapeHtml,
-  renderOrderConfirmationEmail,
-} from './order-confirmation.email';
+import { escapeHtml } from '../../../notifications/templates/email-layout';
+import { renderOrderConfirmationEmail } from './order-confirmation.email';
 
 const buildOrder = (overrides: { fullName?: string; shipping?: number } = {}) =>
   new Order(

@@ -30,6 +30,8 @@ describe('LoginWithOAuthUseCase', () => {
           Promise.resolve(buildUser({ ...data, id: 'user-nuevo' })),
         ),
       addOAuthAccount: jest.fn(),
+      updateName: jest.fn(),
+      updatePasswordHash: jest.fn(),
     };
     const user = buildUser();
     const authTokenService = buildAuthTokenServiceMock(user);

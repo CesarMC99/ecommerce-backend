@@ -1,3 +1,7 @@
+import { NotificationsModule } from '../notifications/notifications.module';
+import { AccountMailer } from './application/services/account-mailer.service';
+import { ChangePasswordUseCase } from './application/use-cases/change-password.use-case';
+import { UpdateProfileUseCase } from './application/use-cases/update-profile.use-case';
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -37,6 +41,7 @@ import { AuthResolver } from './presentation/resolvers/auth.resolver';
 @Module({
   imports: [
     UsersModule, // nos presta USER_REPOSITORY
+    NotificationsModule, // EMAIL_SENDER para los avisos de seguridad
     PassportModule,
     // register() vacío: el secreto y la expiración se pasan al firmar
     // (en JwtTokenGenerator), leídos de la config tipada
@@ -57,6 +62,9 @@ import { AuthResolver } from './presentation/resolvers/auth.resolver';
     LoginWithOAuthUseCase,
     RefreshTokensUseCase,
     LogoutUseCase,
+    UpdateProfileUseCase,
+    ChangePasswordUseCase,
+    AccountMailer,
 
     // --- Infraestructura: estrategia passport para validar access tokens ---
     JwtStrategy,

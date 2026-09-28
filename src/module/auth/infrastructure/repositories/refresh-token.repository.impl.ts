@@ -45,4 +45,21 @@ export class RefreshTokenRepositoryImpl implements RefreshTokenRepository {
       .updateMany({ userId, revokedAt: null }, { revokedAt: new Date() })
       .exec();
   }
+
+  async revokeAllForUserExcept(
+    userId: string,
+    keepTokenHash: string | null,
+  ): Promise<void> {
+    await this.refreshTokenModel
+      .updateMany(
+        {
+          userId,
+          revokedAt: null,
+          // $ne: todas MENOS la sesión actual (si no se conoce, todas)
+          ...(keepTokenHash ? { tokenHash: { $ne: keepTokenHash } } : {}),
+        },
+        { revokedAt: new Date() },
+      )
+      .exec();
+  }
 }

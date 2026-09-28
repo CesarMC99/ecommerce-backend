@@ -23,6 +23,11 @@ export class UserType {
   @Field(() => String, { nullable: true })
   avatarUrl: string | null;
 
+  // Solo si TIENE contraseña, nunca el hash: con esto el perfil sabe si
+  // mostrar "Cambiar contraseña" (las cuentas solo-Google no tienen)
+  @Field({ description: 'Si la cuenta tiene contraseña propia' })
+  hasPassword: boolean;
+
   @Field()
   createdAt: Date;
 }

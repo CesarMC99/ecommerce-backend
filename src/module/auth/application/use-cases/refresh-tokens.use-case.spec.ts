@@ -21,6 +21,7 @@ describe('RefreshTokensUseCase', () => {
       create: jest.fn(),
       revoke: jest.fn(),
       revokeAllForUser: jest.fn(),
+      revokeAllForUserExcept: jest.fn(),
     };
     const userRepository = {
       findById: jest.fn().mockResolvedValue(user),
@@ -28,6 +29,8 @@ describe('RefreshTokensUseCase', () => {
       findByOAuthAccount: jest.fn(),
       create: jest.fn(),
       addOAuthAccount: jest.fn(),
+      updateName: jest.fn(),
+      updatePasswordHash: jest.fn(),
     };
     const authTokenService = buildAuthTokenServiceMock(user);
     const useCase = new RefreshTokensUseCase(
